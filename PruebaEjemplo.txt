@@ -1,0 +1,16 @@
+inicioprog {
+	define
+		[entero,real,cadena]:[a,b,c]
+	fdefine
+	c="hola";
+	[a,b,c] = [10,2.2,"adios"];
+	si (a>3) {
+		a=23;
+	} sino {
+		a=10;
+	}
+	mientras((b+a)> 10) {
+		b=fib(4);
+		c="hola "++"mundo";
+	}
+} finprog
