@@ -1,0 +1,8 @@
+inicioprog {
+	define
+		[entero,entero,entero,entero,entero]:[a,b,c,d,e];
+	fdefine
+	$a = 2;
+	b = fib(33);
+	[a,b,c] = [44,55,66];
+} finprog

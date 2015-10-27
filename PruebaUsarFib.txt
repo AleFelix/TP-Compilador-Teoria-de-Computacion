@@ -1,0 +1,7 @@
+inicioprog {
+	define
+		[entero,entero,entero,entero,entero]:[a,b,c,d,e];
+	fdefine
+	a = 10;
+	b = fib(33);
+} finprog

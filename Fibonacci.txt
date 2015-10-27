@@ -1,0 +1,19 @@
+inicioprog {
+	define
+		[entero,entero,entero,entero,entero]:[n,valorFib,valorAnterior1,valorAnterior2,posicion];
+	fdefine
+	si (n < 2) {
+		valorFib = n;
+	} sino {
+		valorAnterior1 = 0;
+		valorAnterior2 = 1;
+		posicion = 2;
+		mientras (posicion <= n) {
+			valorFib = valorAnterior1 + valorAnterior2;
+			valorAnterior1 = valorAnterior2;
+			valorAnterior2 = valorFib;
+			posicion = posicion + 1;
+		}
+	}
+	n = valorFib;
+} finprog
