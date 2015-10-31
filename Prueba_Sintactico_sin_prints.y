@@ -188,7 +188,7 @@ SI OP_A_PARENT condicion {reservarIf(1);} OP_C_PARENT A_LLAVES sentencias  C_LLA
 
 sino:
 {reservarIf(3);}
-| {reservarIf(2);} SINO A_LLAVES sentencias {reservarIf(3);} C_LLAVES
+| {reservarIf(2);} SINO A_LLAVES sentencias {reservarIf(3);} C_LLAVES  {reservarIf(4);}
 ;
 entrada:
 LEER {po();} ID {poID();}
@@ -348,20 +348,29 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  * codigo intermedio de assembler necesario.
  */
  int reservar(int a) {
+	 char s[100];
  	if (a == 1) {
 		//Esto actua en el inicio de la comparacion, reserva el espacion antes del bloque izquierdo
- 		apilar(indice);
+		 //coloco la etiqueta a la cual se va saltar, de esta forma "etiqueta_indice:"
+		 itoa(indice,s,10);
+ 		  concatenarDelante(s,"ET_");
+		  strcat(s,":");
+		  pf(s);
+		 apilar(indice-1);
  	} else if (a == 2) {
 		//Esto reserva el espacio, y genera el assembler necesario antes del cuerpo del while
+		  //itoa(indice+1,s,10);
+ 		  //concatenarDelante(s,"ET_");
+		  //strcat(s,":");
+		  //pf(s);
  		apilar(indice+1);
  		pf("CMP");
-		//indexSaltoMientras = indice;
- 		pf("-");
+		indexSaltoMientras = indice;
 		//Ponemos la operacion assembler del operador correspondiente.
  		pf(averiguarOperador(ultimaComp));
  	} else if (a == 3) {
 		//Esto reserva el espacio, y genera el assembler necesario despues del cuerpo del while
- 		char s[100];
+		int etiq_final = indice +2;
  		itoa(indice+2,s,10);
  		concatenarDelante(s,"ET_");
  		char aux[TAMANIO_ELEM];
@@ -377,6 +386,11 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  		concatenarDelante(s,"ET_");
  		pf(s);
  		pf("BI");
+		//Se agrega la etiqueta del final del while.
+		itoa(etiq_final,s,10);
+		concatenarDelante(s,"ET_");
+		strcat(s,":");
+		pf(s);
  	}
  }
 
@@ -387,6 +401,7 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  */
  int reservarIf(int a) {
  	char s[100];
+	int etiq_final;
  	if (a == 1) {
 		//Esto actua en el inicio de la comparacion, reserva el espacion antes del bloque izquierdo
  		apilar(indice+1);
@@ -396,6 +411,7 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
 		//Ponemos la operacion assembler del operador correspondiente.
  		pf(averiguarOperador(ultimaComp));
  	} else if (a == 2) {
+		etiq_final = indice + 2;
  		itoa(indice+2,s,10);
  		concatenarDelante(s,"ET_");
  		char aux[TAMANIO_ELEM];
@@ -406,13 +422,21 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  		} else {
  			polacaInversa[tope()][TAMANIO_ELEM - 1] = '\0';
  		}
- 		desapilar();
  		apilar(indice);
- 		pf("-");
+		itoa(indice,s,10);
+		concatenarDelante(s,"ET_");
+		pf(s);
  		pf("BI");
+		itoa(etiq_final,s,10);
+		concatenarDelante(s,"ET_");
+		strcat(s,":");
+		pf(s);
  	} else if (a == 3) {
 		//Esto reserva el espacio, y genera el assembler necesario despues del cuerpo del while
- 		itoa(indice,s,10);
+		//ESTA PARTE ME PARECE QUE NO SE USA
+		int val = indice;
+		apilar(val);
+ 		itoa(val,s,10);
  		concatenarDelante(s,"ET_");
  		char aux[TAMANIO_ELEM];
  		strncpy(aux,s,strlen(s));
@@ -422,8 +446,14 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  		} else {
  			polacaInversa[tope()][TAMANIO_ELEM - 1] = '\0';
  		}
- 		desapilar();
- 	}
+ 		
+ 	} else if(a == 4){
+		desapilar();
+	  itoa( desapilar(),s,10);
+		concatenarDelante(s,"ET_");
+		strcat(s,":");
+		pf(s);
+	} 
  }
 
 /**
