@@ -1,0 +1,10 @@
+inicioprog {
+	define
+		[entero,entero,cadena]:[a,b,c];
+	fdefine
+		   si(b<a){
+			 b=b+a;
+		   }sino{
+			 b=b+1;
+		   }
+} finprog

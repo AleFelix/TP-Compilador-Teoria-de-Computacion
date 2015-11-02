@@ -187,8 +187,8 @@ SI OP_A_PARENT condicion {reservarIf(1);} OP_C_PARENT A_LLAVES sentencias  C_LLA
 ;
 
 sino:
-{reservarIf(3);}
-| {reservarIf(2);} SINO A_LLAVES sentencias {reservarIf(3);} C_LLAVES  {reservarIf(4);}
+{reservarIf(4);}
+| {reservarIf(2);} SINO A_LLAVES sentencias {reservarIf(3);} C_LLAVES  {/*reservarIf(4);*/}
 ;
 entrada:
 LEER {po();} ID {poID();}
@@ -359,10 +359,6 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
 		 apilar(indice-1);
  	} else if (a == 2) {
 		//Esto reserva el espacio, y genera el assembler necesario antes del cuerpo del while
-		  //itoa(indice+1,s,10);
- 		  //concatenarDelante(s,"ET_");
-		  //strcat(s,":");
-		  //pf(s);
  		apilar(indice+1);
  		pf("CMP");
 		indexSaltoMientras = indice;
@@ -403,57 +399,44 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  	char s[100];
 	int etiq_final;
  	if (a == 1) {
+		//DESPUES DE LA CONDICION
 		//Esto actua en el inicio de la comparacion, reserva el espacion antes del bloque izquierdo
- 		apilar(indice+1);
+ 		etiq_final=indice+2;
+		apilar(etiq_final);
  		pf("CMP");
 		//indexSaltoMientras = indice;
- 		pf("-");
+	    itoa(etiq_final,s,10);
+ 		concatenarDelante(s,"ET_");
+		pf(s);
 		//Ponemos la operacion assembler del operador correspondiente.
  		pf(averiguarOperador(ultimaComp));
  	} else if (a == 2) {
-		etiq_final = indice + 2;
- 		itoa(indice+2,s,10);
+		//TERMINACION DEL SINO
+		etiq_final = desapilar();
+        apilar(indice+3);
+        itoa(indice+3,s,10);
  		concatenarDelante(s,"ET_");
- 		char aux[TAMANIO_ELEM];
- 		strncpy(aux,s,strlen(s));
- 		strcpy(polacaInversa[tope()], aux);
- 		if (strlen(s) < TAMANIO_ELEM) {
- 			polacaInversa[tope()][strlen(s)] = '\0';
- 		} else {
- 			polacaInversa[tope()][TAMANIO_ELEM - 1] = '\0';
- 		}
- 		apilar(indice);
-		itoa(indice,s,10);
-		concatenarDelante(s,"ET_");
 		pf(s);
- 		pf("BI");
+		pf("BI");
 		itoa(etiq_final,s,10);
-		concatenarDelante(s,"ET_");
+ 		concatenarDelante(s,"ET_");
 		strcat(s,":");
 		pf(s);
  	} else if (a == 3) {
+		//FIN DEL SINO
 		//Esto reserva el espacio, y genera el assembler necesario despues del cuerpo del while
-		//ESTA PARTE ME PARECE QUE NO SE USA
-		int val = indice;
-		apilar(val);
- 		itoa(val,s,10);
+ 		itoa(desapilar(),s,10);
  		concatenarDelante(s,"ET_");
- 		char aux[TAMANIO_ELEM];
- 		strncpy(aux,s,strlen(s));
- 		strcpy(polacaInversa[tope()], aux);
- 		if (strlen(s) < TAMANIO_ELEM){
- 			polacaInversa[tope()][strlen(s)] = '\0';
- 		} else {
- 			polacaInversa[tope()][TAMANIO_ELEM - 1] = '\0';
- 		}
- 		
- 	} else if(a == 4){
-		desapilar();
-	  itoa( desapilar(),s,10);
-		concatenarDelante(s,"ET_");
 		strcat(s,":");
 		pf(s);
-	} 
+ 	} else if(a==4){
+		//IF SIMPLE ** TERMINACION
+		etiq_final = desapilar();
+		itoa(etiq_final,s,10);
+ 		concatenarDelante(s,"ET_");
+		strcat(s,":");
+		pf(s);
+	}
  }
 
 /**

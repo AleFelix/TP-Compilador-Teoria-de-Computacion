@@ -1,8 +1,5 @@
 a;ID;entero;
 b;ID;entero;
-c;ID;entero;
-d;ID;entero;
-e;ID;entero;
-44;ENTERO;44;
-55;ENTERO;55;
-66;ENTERO;66;
+c;ID;cadena;
+10;ENTERO;10;
+1;ENTERO;1;
