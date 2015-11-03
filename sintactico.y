@@ -486,17 +486,28 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  }
 
 int insertarFIB(char* n) {
-	int salto1, salto2, salto3;
-	char cSalto1[10], cSalto2[10], cSalto3[10];
-	salto1 = indice + 10;
+	int salto1, salto2, salto3, salto4;
+	char cSalto1[20], cSalto2[20], cSalto3[20], cSalto4[20], defSalto1[20], defSalto2[20], defSalto3[20], defSalto4[20];
+	salto1 = indice + 4;
 	itoa(salto1,cSalto1,10);
 	concatenarDelante(cSalto1,"ET_");
-	salto2 = indice + 42;
+	salto2 = indice + 11;
 	itoa(salto2,cSalto2,10);
 	concatenarDelante(cSalto2,"ET_");
-	salto3 = indice + 19;
+	salto3 = indice + 20;
 	itoa(salto3,cSalto3,10);
 	concatenarDelante(cSalto3,"ET_");
+	salto4 = indice + 24;
+	itoa(salto4,cSalto4,10);
+	concatenarDelante(cSalto4,"ET_");
+	strcpy(defSalto1,cSalto1);
+	strcpy(defSalto2,cSalto2);
+	strcpy(defSalto3,cSalto3);
+	strcpy(defSalto4,cSalto4);
+	strcat(defSalto1,":");
+	strcat(defSalto2,":");
+	strcat(defSalto3,":");
+	strcat(defSalto4,":");
 	char *valorFib = "AUX_valorFib";
 	char *valorAnt1 = "AUX_valorAnterior1";
 	char *valorAnt2 = "AUX_valorAnterior2";
@@ -505,7 +516,7 @@ int insertarFIB(char* n) {
 	cargarIDAuxEnTabla(valorAnt1,"entero");
 	cargarIDAuxEnTabla(valorAnt2,"entero");
 	cargarIDAuxEnTabla(pos,"entero");
-	char *fibIntermedio[] = {n,"2","CMP",cSalto1,"BGE",valorFib,n,"=",cSalto2,"BI",valorAnt1,"0","=",valorAnt2,"1","=",pos,"2","=",pos,n,"CMP",cSalto2,"BGT", valorFib, valorAnt1, valorAnt2, "+", "=", valorAnt1, valorAnt2, "=", valorAnt2, valorFib, "=", pos, pos, "1", "+", "=", cSalto3, "BI", n, valorFib, "="};
+	char *fibIntermedio[] = {n, "2", "CMP", cSalto1, "BGE", valorFib, n, "=", cSalto2,"BI", defSalto1, valorAnt1, "0", "=", valorAnt2, "1", "=", pos, "2", "=", defSalto3, pos, n, "CMP",cSalto4,"BGT", valorFib, valorAnt1, valorAnt2,"+", "=", valorAnt1, valorAnt2, "=", valorAnt2, valorFib, "=", pos, pos, "1", "+", "=", cSalto3, "BI", defSalto4, defSalto2, valorFib};
 	size_t i = 0;
 	for (i = 0; i < sizeof(fibIntermedio) / sizeof(fibIntermedio[0]); i++) {
     	poArray(fibIntermedio[i]);

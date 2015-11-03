@@ -15,5 +15,4 @@ inicioprog {
 			posicion = posicion + 1;
 		}
 	}
-	n = valorFib;
 } finprog
