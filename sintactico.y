@@ -349,6 +349,7 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  */
  int reservar(int a) {
 	 char s[100];
+	 int etiq_final;
  	if (a == 1) {
 		//Esto actua en el inicio de la comparacion, reserva el espacion antes del bloque izquierdo
 		 //coloco la etiqueta a la cual se va saltar, de esta forma "etiqueta_indice:"
@@ -359,25 +360,18 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
 		 apilar(indice-1);
  	} else if (a == 2) {
 		//Esto reserva el espacio, y genera el assembler necesario antes del cuerpo del while
- 		apilar(indice+1);
+		etiq_final = indice+1;
+ 		apilar(etiq_final);
  		pf("CMP");
-		indexSaltoMientras = indice;
+	     itoa(etiq_final,s,10);
+ 		 concatenarDelante(s,"ET_");
+		 pf(s);
 		//Ponemos la operacion assembler del operador correspondiente.
  		pf(averiguarOperador(ultimaComp));
+		
  	} else if (a == 3) {
 		//Esto reserva el espacio, y genera el assembler necesario despues del cuerpo del while
-		int etiq_final = indice +2;
- 		itoa(indice+2,s,10);
- 		concatenarDelante(s,"ET_");
- 		char aux[TAMANIO_ELEM];
- 		strncpy(aux,s,strlen(s));
- 		strcpy(polacaInversa[tope()], aux);
- 		if (strlen(s) < TAMANIO_ELEM) {
- 			polacaInversa[tope()][strlen(s)] = '\0';
- 		} else {
- 			polacaInversa[tope()][TAMANIO_ELEM - 1] = '\0';
- 		}
- 		desapilar();
+		etiq_final=desapilar();
  		itoa(desapilar(),s,10);
  		concatenarDelante(s,"ET_");
  		pf(s);
