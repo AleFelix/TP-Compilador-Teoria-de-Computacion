@@ -1,11 +1,11 @@
 a;ID;entero;
 b;ID;entero;
-c;ID;entero;
-d;ID;entero;
-e;ID;entero;
+c;ID;cadena;
 10;ENTERO;10;
-33;ENTERO;33;
+2;ENTERO;2;
+3;ENTERO;3;
 AUX_valorFib;ID;entero;
 AUX_valorAnterior1;ID;entero;
 AUX_valorAnterior2;ID;entero;
 AUX_posicion;ID;entero;
+1;ENTERO;1;

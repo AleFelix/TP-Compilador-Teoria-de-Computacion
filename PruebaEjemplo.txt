@@ -1,21 +1,16 @@
 inicioprog {
 	define
 		[entero,entero,cadena]:[a,b,c];
-	fdefine
-	c="hola";
+	fdefine		
 	
-	[a,b,c] = [10,2.2,"adios"];
-	mientras((b+a) > 10) {
-		b=fib(4);
-		c="hola "++"mundo";
-		mientras(b<=a){
-		   si(a<b){
-			 b=b+a;
-		   }sino{
-			 b=b+1;
-		   }
-		}
+	mientras(b<=a o b<10){
+	   si(a>=b y a < 2){
+		 b=b+fib(3);
+	   }sino{
+		 b=b+1;
+	   }
 	}
+
 	
 	si(b<a){
 		a=1+a;

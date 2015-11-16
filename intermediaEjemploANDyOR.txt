@@ -1,0 +1,101 @@
+(0) ET_0: mientras(
+(1) _b    
+(2) _a
+(3) CMP     
+(4) ET_4
+(5) BLE     si b<=a  entonces salto a ET_4: porque al menos una condicion dio TRUE!!
+(6) _b
+(7) 10
+(8) CMP
+(9) ET_4  
+(10) BLT    si b<10  entonces salto a ET_4: porque al menos una condicion dio TRUE!!
+(11) ET_12
+(12) BI     si NINGUNA condicion dio TRUE, entonces salto a ET_12:
+(13) ET_4:  <-- INICIO CUERPO DEL MIENTRAS
+(14) _a	    si(
+(15) _b
+(16) CMP    
+(17) ET_17
+(18) BGE    si a>=b entonces salto a ET_17: porque al menos una condicion dio TRUE!!!
+(19) _a
+(20) 2
+(21) CMP
+(22) ET_17
+(23) BLT    si a<2 entonces salto a ET_17: porque al menos una condicion dio TRUE!!!
+(24) ET_25
+(25) BI     <-- si NINGUNA condicion dio TRUE, entonces salto a ET_25: (que en este caso es la seccion del 'SINO')
+(26) ET_17: <-- PARTE DEL SI
+(27) _b
+(28) _b
+(29) 3
+(30) 2
+(31) CMP
+(32) ET_33
+(33) BGE
+(34) AUX_valorFib
+(35) 3
+(36) =
+(37) ET_40
+(38) BI
+(39) ET_33:
+(40) AUX_valorAnterior1
+(41) 0
+(42) =
+(43) AUX_valorAnterior2
+(44) 1
+(45) =
+(46) AUX_posicion
+(47) 2
+(48) =
+(49) ET_49:
+(50) AUX_posicion
+(51) 3
+(52) CMP
+(53) ET_53
+(54) BGT
+(55) AUX_valorFib
+(56) AUX_valorAnterior1
+(57) AUX_valorAnterior2
+(58) +
+(59) =
+(60) AUX_valorAnterior1
+(61) AUX_valorAnterior2
+(62) =
+(63) AUX_valorAnterior2
+(64) AUX_valorFib
+(65) =
+(66) AUX_posicion
+(67) AUX_posicion
+(68) 1
+(69) +
+(70) =
+(71) ET_49
+(72) BI
+(73) ET_53:
+(74) ET_40:
+(75) AUX_valorFib
+(76) +
+(77) =
+(78) ET_81
+(79) BI     <-- SI PASE POR 'SI', salto al fin de la estructura
+(80) ET_25: <-- ACA EMPIEZA LA PARTE DEL 'SINO'
+(81) _b
+(82) _b
+(83) 1
+(84) +
+(85) =
+(86) ET_81:  <-- FIN de la estructura SI/SINO
+(87) ET_0    
+(88) BI		 <-- bucle del MIENTRAS
+(89) ET_12:	 <-- FIN de la estructura MIENTRAS
+(90) _b		<-- inicio de la estructura if simple del final del codigo, no tiene sentido su analisis
+(91) _a
+(92) CMP
+(93) ET_94
+(94) BGE	
+(95) _a
+(96) 1
+(97) _a
+(98) +
+(99) =
+(100) ET_94:

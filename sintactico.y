@@ -23,6 +23,8 @@ char pilaIdAsigMul[100][TAMANIO_ELEM];
 char pilaConstAsigMul[100][TAMANIO_ELEM];
 int indexPilaIdAsigMul = 0;
 int indexPilaConstAsigMul = 0;
+int opY = 0;
+int opO = 0;
 
 %}
 
@@ -166,19 +168,19 @@ MIENTRAS OP_A_PARENT  {reservar(1);} condicion {reservar(2);} OP_C_PARENT  A_LLA
 ;
 
 condicion:
-comparacion OP_Y  comparacion {pf("y");}
-| comparacion OP_O comparacion {pf("o");}
+comparacion {reservarYO(1);} OP_Y comparacion {reservarYO(2);/*operador("y");*/}
+| comparacion {reservarYO(3);} OP_O comparacion {reservarYO(4);/*operador("o");*/}
 | NO {po();} comparacion
 | comparacion
 | expresion
 ;
 
 comparacion:
-expresion OP_MENOR expresion   {ultimaComparacion("<");}
-| expresion OP_MAYOR  expresion   {ultimaComparacion(">");}
+expresion OP_MENOR expresion   {ultimaComparacion("< ");}
+| expresion OP_MAYOR  expresion   {ultimaComparacion("> ");}
 | expresion OP_MENOR_I  expresion    {ultimaComparacion("<=");}
 | expresion OP_MAYOR_I expresion    {ultimaComparacion(">=");}
-| expresion OP_IGUAL expresion     {ultimaComparacion("=");}
+| expresion OP_IGUAL expresion     {ultimaComparacion("==");}
 | expresion OP_DISTINTO expresion     {ultimaComparacion("!=");}
 ;
 
@@ -244,9 +246,11 @@ int desapilar();
 char* concatenarStrings(char* a,char* b);
 void mostrarArray();
 char* averiguarOperador(char* op);
+char* averiguarOperadorVerdadero(char* op);
 void iniciarPila();
 void apilar(int n);
 void subStr(char* string, char divisor);
+void operador(char* op);
 
 int main(int argc,char *argv[]) {
 	if ((yyin = fopen(argv[1], "rt")) == NULL) {
@@ -329,6 +333,7 @@ int p() {
  * Guarda la ultima comparacion que se realizo en el codigo 
  */
  int ultimaComparacion(char* s) {
+	
  	strncpy(ultimaComp,s,strlen(s));
  }
 
@@ -359,15 +364,21 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
 		  pf(s);
 		 apilar(indice-1);
  	} else if (a == 2) {
-		//Esto reserva el espacio, y genera el assembler necesario antes del cuerpo del while
-		etiq_final = indice+1;
- 		apilar(etiq_final);
- 		pf("CMP");
-	     itoa(etiq_final,s,10);
- 		 concatenarDelante(s,"ET_");
-		 pf(s);
-		//Ponemos la operacion assembler del operador correspondiente.
- 		pf(averiguarOperador(ultimaComp));
+		if(opY == 0 & opO == 0){ 
+			//Esto reserva el espacio, y genera el assembler necesario antes del cuerpo del while
+			etiq_final = indice+1;
+			apilar(etiq_final);
+			pf("CMP");
+			 itoa(etiq_final,s,10);
+			 concatenarDelante(s,"ET_");
+			 pf(s);
+			//Ponemos la operacion assembler del operador correspondiente.
+			pf(averiguarOperador(ultimaComp));
+		}else if (opY == 1){
+			opY = 0;
+		}else if (opO == 1){
+			opO = 0;
+		}
 		
  	} else if (a == 3) {
 		//Esto reserva el espacio, y genera el assembler necesario despues del cuerpo del while
@@ -383,6 +394,58 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
 		pf(s);
  	}
  }
+ 
+ int reservarYO(int a) {
+	 char s[100];
+	 int etiq_final;
+ 	if (a == 1) {
+		//Esto reserva el espacio, y genera el assembler necesario para las comparaciones del operador Y
+		etiq_final = indice+1;
+ 		apilar(etiq_final);
+ 		pf("CMP");
+	     itoa(etiq_final,s,10);
+ 		 concatenarDelante(s,"ET_");
+		 pf(s);
+		//Ponemos la operacion assembler del operador correspondiente.
+ 		pf(averiguarOperador(ultimaComp));
+ 	} else if (a == 2) {
+		pf("CMP");
+	     itoa(tope(),s,10);
+ 		 concatenarDelante(s,"ET_");
+		 pf(s);
+		//Ponemos la operacion assembler del operador correspondiente.
+ 		pf(averiguarOperador(ultimaComp));
+ 		operador("y");
+ 	} else if (a == 3) {
+		etiq_final = indice+1;
+ 		apilar(etiq_final);
+ 		pf("CMP");
+	     itoa(etiq_final,s,10);
+ 		 concatenarDelante(s,"ET_");
+		 pf(s);
+		//Ponemos la operacion assembler del operador correspondiente.
+ 		pf(averiguarOperadorVerdadero(ultimaComp));
+ 	}else if (a == 4) {
+		int tope = desapilar();
+		pf("CMP");
+	     itoa(tope,s,10);
+ 		 concatenarDelante(s,"ET_");
+		 pf(s);
+		//Ponemos la operacion assembler del operador correspondiente.
+ 		pf(averiguarOperadorVerdadero(ultimaComp));
+ 		etiq_final = indice+1;
+ 		apilar(etiq_final);
+ 		itoa(etiq_final,s,10);
+ 		concatenarDelante(s,"ET_");
+		pf(s);
+		pf("BI");
+		itoa(tope,s,10);
+ 		concatenarDelante(s,"ET_");
+		strcat(s,":");
+		pf(s);
+ 		operador("o");
+ 	}
+ }
 
 /**
  * Segun en el sector del IF en que se encuentra
@@ -393,17 +456,23 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  	char s[100];
 	int etiq_final;
  	if (a == 1) {
-		//DESPUES DE LA CONDICION
-		//Esto actua en el inicio de la comparacion, reserva el espacion antes del bloque izquierdo
- 		etiq_final=indice+2;
-		apilar(etiq_final);
- 		pf("CMP");
-		//indexSaltoMientras = indice;
-	    itoa(etiq_final,s,10);
- 		concatenarDelante(s,"ET_");
-		pf(s);
-		//Ponemos la operacion assembler del operador correspondiente.
- 		pf(averiguarOperador(ultimaComp));
+		if(opY == 0 & opO == 0){ 
+			//DESPUES DE LA CONDICION
+			//Esto actua en el inicio de la comparacion, reserva el espacion antes del bloque izquierdo
+			etiq_final=indice+2;
+			apilar(etiq_final);
+			pf("CMP");
+			//indexSaltoMientras = indice;
+			itoa(etiq_final,s,10);
+			concatenarDelante(s,"ET_");
+			pf(s);
+			//Ponemos la operacion assembler del operador correspondiente.
+			pf(averiguarOperador(ultimaComp));
+		}else if(opY == 1){
+			opY = 0;
+		}else if(opO == 1){
+			opO = 0;
+		}
  	} else if (a == 2) {
 		//TERMINACION DEL SINO
 		etiq_final = desapilar();
@@ -462,24 +531,55 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
  	return newBuffer;
  }
 
+void operador(char* op){
+	if (strcmp(op,"y") == 0) {
+ 		opY = 1;
+ 	} else if (strcmp(op,"o") == 0) {
+ 		opO = 1;
+ 	} else{
+	}
+}
 /**
  * Averigua cual es el operador enviado como parametro
- * y devuelve el codigo asembler de la comparacion
+ * y devuelve el codigo asembler de la comparacion por falso
  * correspondiente.
  */
  char* averiguarOperador(char* op) {
- 	if (strcmp(ultimaComp,">=") == 0) {
+ 	if (strcmp(op,">=") == 0) {
  		return "BLT";
- 	} else if (strcmp(op,">") == 0) {
+ 	} else if (strcmp(op,"> ") == 0) {
  		return "BLE";
  	} else if (strcmp(op,"<=") == 0) {
  		return "BGT";
- 	} else if (strcmp(op,"<") == 0) {
+ 	} else if (strcmp(op,"< ") == 0) {
  		return "BGE";
- 	} else if (strcmp(op,"<>") == 0) {
+ 	} else if (strcmp(op,"!=") == 0) {
  		return "BEQ";
  	} else if (strcmp(op,"==") == 0) {
  		return "BNE";
+ 	} else {
+ 		return "ERROR-BUSQUEDA-OP";
+ 	}; 
+ }
+ 
+ /**
+ * Averigua cual es el operador enviado como parametro
+ * y devuelve el codigo asembler de la comparacion por verdadero
+ * correspondiente.
+ */
+ char* averiguarOperadorVerdadero(char* op) {
+ 	if (strcmp(op,">=") == 0) {
+ 		return "BGE";
+ 	} else if (strcmp(op,"> ") == 0) {
+ 		return "BGT";
+ 	} else if (strcmp(op,"<=") == 0) {
+ 		return "BLE";
+ 	} else if (strcmp(op,"< ") == 0) {
+ 		return "BLT";
+ 	} else if (strcmp(op,"!=") == 0) {
+ 		return "BNE";
+ 	} else if (strcmp(op,"==") == 0) {
+ 		return "BEQ";
  	} else {
  		return "ERROR-BUSQUEDA-OP";
  	}; 
