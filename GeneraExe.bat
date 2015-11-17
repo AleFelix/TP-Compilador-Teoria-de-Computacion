@@ -1,10 +1,10 @@
 del intermedia.txt
-A:\Flex\bin\flex Prueba_Lexico.l
-A:\Flex\bin\bison -dyv sintactico.y
+c:\GnuWin32\bin\flex Prueba_Lexico.l
+c:\GnuWin32\bin\bison -dyv sintactico.y
 pause
 c:\MinGW\bin\gcc.exe lex.yy.c y.tab.c -o TPFinal.exe
 pause
-TPfinal.exe PruebaEjemplo.txt
+TPfinal.exe Prueba.txt
 del lex.yy.c
 del y.tab.c
 del y.output

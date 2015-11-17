@@ -1,98 +1,83 @@
-(0) ET_0:
-(1) _b
-(2) _a
-(3) CMP
-(4) ET_4
-(5) BLE
-(6) _b
-(7) 10
-(8) CMP
-(9) ET_4
-(10) BLT
-(11) ET_12
-(12) BI
-(13) ET_4:
-(14) _a   si(
-(15) _b
-(16) CMP
-(17) ET_17  a < b , dio FALSE, entonces salto a ET_17: (parte 'SINO')
-(18) BLT
-(19) _a
-(20) 2
-(21) CMP
-(22) ET_17
-(23) BGE	si a >= 2, dio FALSE, entonces salto a ET_17: (parte 'SINO')
-(24) _b		<- CUERPO de 'SI'
-(25) _b
-(26) 3
-(27) 2
-(28) CMP
-(29) ET_30
-(30) BGE
-(31) AUX_valorFib
-(32) 3
-(33) =
-(34) ET_37
-(35) BI
-(36) ET_30:
-(37) AUX_valorAnterior1
-(38) 0
-(39) =
-(40) AUX_valorAnterior2
-(41) 1
-(42) =
-(43) AUX_posicion
-(44) 2
-(45) =
-(46) ET_46:
-(47) AUX_posicion
-(48) 3
-(49) CMP
-(50) ET_50
-(51) BGT
-(52) AUX_valorFib
-(53) AUX_valorAnterior1
-(54) AUX_valorAnterior2
-(55) +
-(56) =
-(57) AUX_valorAnterior1
-(58) AUX_valorAnterior2
-(59) =
-(60) AUX_valorAnterior2
-(61) AUX_valorFib
-(62) =
-(63) AUX_posicion
-(64) AUX_posicion
-(65) 1
-(66) +
-(67) =
-(68) ET_46
-(69) BI
-(70) ET_50:
-(71) ET_37:
-(72) AUX_valorFib
-(73) +
-(74) =
-(75) ET_78
-(76) BI
-(77) ET_17: <-- parte del 'SINO'
-(78) _b
-(79) _b
-(80) 1
-(81) +
-(82) =
-(83) ET_78: <-- FIN de la estructura SI/SINO
-(84) ET_0
-(85) BI
-(86) ET_12:
-(87) _b
-(88) _a
-(89) CMP
-(90) ET_91
-(91) BGE
-(92) _a
-(93) 1
-(94) _a
-(95) +
-(96) =
-(97) ET_91:
+_b
+_c
+_d
+*
++
+_e
+-
+_a
+=
+_d
+_e
++
+_c
+=
+_d
+_a
+=
+b
+2
+CMP
+ET_21
+BGE
+b
+AUX_valorFib
+=
+ET_28
+BI
+ET_21:
+0
+AUX_valorAnterior1
+=
+1
+AUX_valorAnterior2
+=
+2
+AUX_posicion
+=
+ET_37:
+AUX_posicion
+b
+CMP
+ET_41
+BGT
+AUX_valorAnterior1
+AUX_valorAnterior2
++
+AUX_valorFib
+=
+AUX_valorAnterior2
+AUX_valorAnterior1
+=
+AUX_valorFib
+AUX_valorAnterior2
+=
+AUX_posicion
+1
++
+AUX_posicion
+=
+ET_37
+BI
+ET_41:
+ET_28:
+AUX_valorFib
+_c
+=
+_a
+_b
+CMP
+ET_70
+BGE
+125
+_a
+=
+ET_77
+BI
+ET_70:
+_d
+_e
+*
+_a
+=
+ET_77:

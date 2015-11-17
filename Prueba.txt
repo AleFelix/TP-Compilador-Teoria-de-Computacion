@@ -1,0 +1,14 @@
+inicioprog {
+	define
+		[entero,entero,entero,entero,entero]:[a,b,c,d,e];
+	fdefine
+	a=b+c*d-e;
+	c=d+e;
+	a=d;
+	c=fib(b);
+	si (a < b) {
+		a = 125;	
+	} sino {
+		a = d * e;
+	}
+} finprog
