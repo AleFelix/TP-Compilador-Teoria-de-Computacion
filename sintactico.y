@@ -199,8 +199,8 @@ LEER {po();} ID {poID();}
 ;
 
 salida:
-ESCRIBIR {po();} ID {poID();}
-| ESCRIBIR {po();} CADENA {po();}
+ESCRIBIR {pf("escribir");} ID {poID();}
+| ESCRIBIR {pf("escribir");} CADENA {po();}
 ;
 
 sentencias_prints:
