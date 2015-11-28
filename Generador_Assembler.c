@@ -36,6 +36,11 @@ char etiquetaEncontrada[TAMANIO_ELEM];
 int ultimoTokenFueOperador = FALSE;
 int anteUltimoTokenFueOperador = FALSE;
 
+char *valorFib = "AUX_valorFib";
+char *valorAnt1 = "AUX_valorAnterior1";
+char *valorAnt2 = "AUX_valorAnterior2";
+char *pos = "AUX_posicion";
+
 void declararVariables();
 void declararID(char *nombreID, char *tipoID);
 void copiarElementoAMatrizTabla(char *nombre, char *tipo, char *valorOTipoID);
@@ -72,6 +77,7 @@ int esEtiqueta(char* token);
 int esDefinicionDeEtiqueta(char* token);
 int esSalto(char *token);
 void obtenerInstruccionDeOperador(char *operador);
+void concatenarDelante(char* texto, const char* textoPrevio);
 
 int main(int argc, char *argv[]) {
 	iniTabla();
@@ -261,6 +267,13 @@ void declararID(char *nombreID, char *tipoID) {
 		strcpy(tipo, "dd\t?");
 	}
 	strcpy(declaracion, "\t");
+	
+	//fran
+	
+	if((strcmp(nombreID,valorFib) != 0) &&  (strcmp(nombreID,valorAnt1) != 0) && (strcmp(nombreID,valorAnt2) != 0) && (strcmp(nombreID,pos)))
+	{
+	strcat(declaracion, "_");
+    }
 	strcat(declaracion, nombreID);
 	strcat(declaracion, "\t\t\t");
 	strcat(declaracion, tipo);
@@ -320,7 +333,7 @@ void generarFinCodigo() {
 }
 
 void iniAssembler() {
-	assembler = fopen("assembler.txt", "w+");
+	assembler = fopen("assembler.asm", "w+");
 	if (assembler == NULL) {
 		printf("\nNo se puede abrir el archivo de assembler\n");
 		exit(1);
@@ -538,3 +551,15 @@ void obtenerInstruccionDeOperador(char *operador) {
 		printf("\nERROR FATAL: Operador %s desconocido\n", operador);
 	}
 }
+
+
+void concatenarDelante(char* texto, const char* textoPrevio) {
+	size_t longitud = strlen(textoPrevio);
+	size_t i;
+	memmove(texto + longitud, texto, strlen(texto) + 1);
+	for (i = 0; i < longitud; ++i) {
+		texto[i] = textoPrevio[i];
+	}
+}
+
+

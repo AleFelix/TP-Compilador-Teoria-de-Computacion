@@ -199,8 +199,8 @@ LEER {po();} ID {poID();}
 ;
 
 salida:
-ESCRIBIR {pf("escribir");} ID {poID();}
-| ESCRIBIR {pf("escribir");} CADENA {po();}
+ESCRIBIR {po();} ID {poID();}
+| ESCRIBIR {po();} CADENA {po();}
 ;
 
 sentencias_prints:
@@ -622,6 +622,9 @@ char* averiguarOperadorVerdadero(char* op) {
 }
 
 int insertarFIB(char* n) {
+     char nn[20];
+	strcpy(nn,n);
+    concatenarDelante(nn,"_");
 	int salto1, salto2, salto3, salto4;
 	char cSalto1[20], cSalto2[20], cSalto3[20], cSalto4[20], defSalto1[20], defSalto2[20], defSalto3[20], defSalto4[20];
 	salto1 = indice + 4;
@@ -652,8 +655,8 @@ int insertarFIB(char* n) {
 	cargarIDAuxEnTabla(valorAnt1, "entero");
 	cargarIDAuxEnTabla(valorAnt2, "entero");
 	cargarIDAuxEnTabla(pos, "entero");
-	char *fibIntermedio[] = { n, "2", "CMP", cSalto1, "BGE", n, valorFib, "=", cSalto2, "BI", defSalto1,
-			"0", valorAnt1, "=", "1", valorAnt2, "=", "2", pos, "=", defSalto3, pos, n, "CMP", cSalto4,
+	char *fibIntermedio[] = { nn, "2", "CMP", cSalto1, "BGE", nn, valorFib, "=", cSalto2, "BI", defSalto1,
+			"0", valorAnt1, "=", "1", valorAnt2, "=", "2", pos, "=", defSalto3, pos, nn, "CMP", cSalto4,
 			"BGT", valorAnt1,valorAnt2, "+", valorFib, "=", valorAnt2, valorAnt1, "=", valorFib, valorAnt2, "=",
 			pos, "1", "+", pos, "=", cSalto3, "BI", defSalto4, defSalto2, valorFib };
 	size_t i = 0;
