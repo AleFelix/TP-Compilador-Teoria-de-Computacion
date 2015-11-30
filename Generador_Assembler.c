@@ -744,7 +744,6 @@ char* concatenarGuionEnCadena(char* cadena) {
 	// Copiamos y concatenamos
 	strcpy(newBuffer, "T_");
 	contenido = strtok(copia, "\"");
-	printf("El contenido de la cadena es %s\n", contenido);
 	char *puntero = contenido;
 	for (; *puntero; ++puntero) {
 		if (*puntero == ' ') {
@@ -818,17 +817,13 @@ int verificarSiEsCadena(char *token) {
 			tipoActual = matrizTabla[i][POS_TIPO_TABLA];
 			if (strcmp(tipoActual, TIPO_ID) == TRUE) {
 				if (strcmp(matrizTabla[i][POS_TIPOID_TABLA], ID_CADENA) == TRUE) {
-					printf("El token %s es una cadena\n", token);
 					return TRUE;
 				} else {
-					printf("El token %s no es una cadena\n", token);
 					return FALSE;
 				}
 			} else if (strcmp(tipoActual, TIPO_CADENA) == TRUE) {
-				printf("El token %s es una cadena\n", token);
 				return TRUE;
 			} else {
-				printf("El token %s no es una cadena\n", token);
 				return FALSE;
 			}
 		}
