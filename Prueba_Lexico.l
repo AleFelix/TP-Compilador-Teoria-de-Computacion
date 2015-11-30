@@ -25,7 +25,7 @@ ESPACIO      [ ]
 COMILLAS     ["]
 ID        {LETRA}({LETRA}|{DIGITO}|_)*
 REAL        {DIGITO}+{PUNTO}{DIGITO}+|{PUNTO}{DIGITO}+|{DIGITO}+{PUNTO}
-CADENA        {COMILLAS}({LETRA}|{DIGITO}|{PUNTO}|{ESPACIO})*{COMILLAS}
+CADENA        {COMILLAS}({LETRA}|{DIGITO}|{ESPACIO})*{COMILLAS}
 
 %%
 "inicioprog"        { iniciarTabla(); return INI_PROG;}

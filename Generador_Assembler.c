@@ -86,7 +86,9 @@ char* agregarFinCadena(char *cadena);
 int verificarSiEsCadena(char *token);
 char* generarRutinasCadenas();
 int esConcatenacion(char *token);
-void insertaresperaTecla();
+void insertarEsperaTecla();
+int sonDelMismoTipo(char* token1, char* token2);
+int verificarSiEsID(char *token);
 
 int main(int argc, char *argv[]) {
 	iniTabla();
@@ -191,7 +193,7 @@ void generarCodigo() {
 	}
 }
 
-void insertaresperaTecla() {
+void insertarEsperaTecla() {
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tmov dx,OFFSET _NEWLINE\n\tmov ah,09\n\tint 21h\n\tmov dx,OFFSET _msgPRESIONE\n\tmov ah,09\n\tint 21h\n\tmov ah, 1\n\tint 21h");
 	fprintf(assembler, "%s\n", linea);
@@ -227,6 +229,10 @@ void insertarEscritura(char *token) {
 }
 
 void insertarOperacionCompleja(char *variable, char *operador) {
+	if (verificarSiEsCadena(variable) == TRUE) {
+		printf("ERROR FATAL: No se puede realizar la operacion %s sobre la cadena %s\n", operador, variable);
+		exit(1);
+	}
 	obtenerInstruccionDeOperador(operador);
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tfld ");
@@ -238,6 +244,10 @@ void insertarOperacionCompleja(char *variable, char *operador) {
 }
 
 void insertarOperacionSimple(char *valor1, char*valor2, char *operador) {
+	if (sonDelMismoTipo(valor1, valor2) == FALSE) {
+		printf("ERROR FATAL: Se intento realizar la operacion %s sobre los elementos %s y %s, los cuales no son del mismo tipo\n", operador, valor1, valor2);
+		exit(1);
+	}
 	obtenerInstruccionDeOperador(operador);
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tfld ");
@@ -251,6 +261,10 @@ void insertarOperacionSimple(char *valor1, char*valor2, char *operador) {
 }
 
 void insertarComparacion(char *valor1, char*valor2) {
+	if (sonDelMismoTipo(valor1, valor2) == FALSE) {
+		printf("ERROR FATAL: Se intento comparar los elementos %s y %s, los cuales no son del mismo tipo\n", valor1, valor2);
+		exit(1);
+	}
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tfld ");
 	strcat(linea, valor1);
@@ -272,6 +286,13 @@ void insertarSalto(char *token) {
 }
 
 void insertarAsignacionCompleja(char *variable) {
+	if (verificarSiEsID(variable) == FALSE) {
+		printf("ERROR FATAL: %s no es un ID sobre el que se pueda realizar asignaciones\n", variable);
+		exit(1);
+	} else if (verificarSiEsCadena(variable) == TRUE) {
+		printf("ERROR FATAL: No se puede realizar la asignacion sobre la cadena %s\n", variable);
+		exit(1);
+	}
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tfstp ");
 	strcat(linea, variable);
@@ -280,6 +301,13 @@ void insertarAsignacionCompleja(char *variable) {
 }
 
 void insertarAsignacionSimple(char *valor, char *variable) {
+	if (verificarSiEsID(variable) == FALSE) {
+		printf("ERROR FATAL: %s no es un ID sobre el que se pueda realizar asignaciones\n", variable);
+		exit(1);
+	} else if (sonDelMismoTipo(valor, variable) == FALSE) {
+		printf("ERROR FATAL: Se intento asignar %s a %s, los cuales no son del mismo tipo\n", valor, variable);
+		exit(1);
+	}
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tfld ");
 	strcat(linea, valor);
@@ -290,6 +318,19 @@ void insertarAsignacionSimple(char *valor, char *variable) {
 }
 
 void insertarAsignacionConcatenadaCadena(char *valor1, char *valor2, char *variable) {
+	if (verificarSiEsID(variable) == FALSE) {
+		printf("ERROR FATAL: %s no es un ID sobre el que se pueda realizar asignaciones\n", variable);
+		exit(1);
+	} else if (verificarSiEsCadena(valor1) == FALSE) {
+		printf("ERROR FATAL: No se puede realizar la concatenacion de %s\n", valor1);
+		exit(1);
+	} else if (verificarSiEsCadena(valor2) == FALSE) {
+		printf("ERROR FATAL: No se puede realizar la concatenacion de %s\n", valor2);
+		exit(1);
+	} else if (verificarSiEsCadena(variable) == FALSE) {
+		printf("ERROR FATAL: No se puede realizar la asignacion de la concatenacion sobre %s\n", variable);
+		exit(1);
+	}
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tmov si,OFFSET ");
 	strcat(linea, valor1);
@@ -303,6 +344,16 @@ void insertarAsignacionConcatenadaCadena(char *valor1, char *valor2, char *varia
 }
 
 void insertarAsignacionSimpleCadena(char *valor, char *variable) {
+	if (verificarSiEsID(variable) == FALSE) {
+		printf("ERROR FATAL: %s no es un ID sobre el que se pueda realizar asignaciones\n", variable);
+		exit(1);
+	} else if (verificarSiEsCadena(valor) == FALSE) {
+		printf("ERROR FATAL: No se puede realizar la asignacion de %s a una variable cadena\n", valor);
+		exit(1);
+	} else if (verificarSiEsCadena(variable) == FALSE) {
+		printf("ERROR FATAL: No se puede realizar la asignacion de la cadena sobre %s\n", variable);
+		exit(1);
+	}
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tmov si,OFFSET ");
 	strcat(linea, valor);
@@ -331,8 +382,10 @@ void declararVariables() {
 		if (posElemento == POS_TIPO_TABLA) {
 			if (strcmp(valoresTabla[i], TIPO_ID) == TRUE) {
 				declararID(valoresTabla[i - 1], valoresTabla[i + 1]);
+				printf("%s fue declarado\n", valoresTabla[i - 1]);
 			} else {
 				declararConstante(valoresTabla[i], valoresTabla[i + 1]);
+				printf("%s fue declarado\n", valoresTabla[i - 1]);
 			}
 		}
 		posElemento++;
@@ -430,7 +483,7 @@ void generarInicioCodigo() {
 }
 
 void generarFinCodigo() {
-	insertaresperaTecla();
+	insertarEsperaTecla();
 	char *finCodigo = "\tmov ax, 4C00h\n\tint 21h\nEND START";
 	fprintf(assembler, "%s\n", finCodigo);
 }
@@ -727,6 +780,34 @@ char* agregarFinCadena(char *cadena) {
 	strcat(newBuffer, "$\"");
 	free(copia);
 	return newBuffer;
+}
+
+int sonDelMismoTipo(char* token1, char* token2) {
+	int token1EsCadena = verificarSiEsCadena(token1);
+	int token2EsCadena = verificarSiEsCadena(token2);
+	if (token1EsCadena == TRUE && token2EsCadena == TRUE) {
+		return TRUE;
+	} else if (token1EsCadena == FALSE && token2EsCadena == FALSE) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+int verificarSiEsID(char *token) {
+	char* tipoActual;
+	int i;
+	for (i = 0; i < TAMANIO_COLA; i++) {
+		if (strcmp(matrizTabla[i][POS_NOMBRE_TABLA], token) == TRUE) {
+			tipoActual = matrizTabla[i][POS_TIPO_TABLA];
+			if (strcmp(tipoActual, TIPO_ID) == TRUE) {
+				return TRUE;
+			} else {
+				return FALSE;
+			}
+		}
+	}
+	return FALSE;
 }
 
 int verificarSiEsCadena(char *token) {

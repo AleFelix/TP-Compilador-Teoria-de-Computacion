@@ -1,34 +1,72 @@
 inicioprog {
 	define
-		[entero,entero,cadena,cadena,cadena]:[n1,n2,t1,t2,t3];
+		[entero,entero,entero,entero,cadena,cadena,cadena]:[nAux,n1,n2,n3,t1,t2,t3];
 	fdefine
-	n1 = 3;
-	n2 = 5;
-	t1 = "Hola ";
-	t2 = "Mundo";
+	escribir "Bienvenido al sistema de pruebas";
+	escribir "Ingrese un numero por favor";
+	leer n1;
+	escribir "Que interesante";
+	n3 = fib(n1);
+	escribir "La secuencia de fibonacci de este numero es";
+	escribir n3;
+	escribir "Ingrese otro numero por favor";
+	leer n2;
+	si (n1 > n2) {
+		escribir "El primer numero ingresado es mayor al segundo";
+		n3 = 0;
+		nAux = n2;
+		mientras (nAux < n1) {
+			nAux = nAux + 1;
+			n3 = n3 + 1;
+		}
+		escribir "La diferencia entre ambos es";
+		escribir n3;
+	} sino {
+		si (n1 < n2) {
+			escribir "El primer numero ingresado es menor al segundo";
+			n3 = 0;
+			nAux = n1;
+			mientras (nAux < n2) {
+				nAux = nAux + 1;
+				n3 = n3 + 1;
+			}
+			escribir "La diferencia entre ambos es";
+			escribir n3;
+		} sino {
+			escribir "Los numeros son iguales";
+		}
+	}
+	si (n1 > 1 y n2 > 1) {
+		escribir "De hecho ambos numeros son mayores a 1";
+	} sino {
+		escribir "De hecho uno de ellos no es mayor a 1";
+	}
+	si (n1 == 3 o n2 == 3) {
+		escribir "Y tambien se que alguno de los dos es tres";
+	} sino {
+		escribir "Y tambien se que ninguno de los dos es tres";
+	}
+	escribir "Solo una cosa mas";
+	escribir "Ingrese un texto";
+	leer t1;
+	t2 = "El texto es ";
+	t3 = t2 ++ t1;
+	escribir t3;
+	escribir "Ahora algunas operaciones";
+	escribir "El primer numero mas 5 es";
+	n1 = n1 + 5;
+	escribir n1;
+	escribir "El segundo numero por 3 es";
+	n2 = n2 * 3;
+	escribir n2;
+	escribir "Y si los sumamos y los dividimos por 2";
+	n3 = (n1 + n2) / 2;
+	escribir n3;
+	[n1,n2,n3,t1,t2] = [1,2,3,"Gracias por ","realizar la prueba"];
+	escribir "Terminando en";
+	escribir n3;
+	escribir n2;
+	escribir n1;
 	t3 = t1 ++ t2;
 	escribir t3;
-	escribir n1;
-	escribir n2;
-	n1 = n1 + n2;
-	escribir n1;
-	escribir "Esto funciona";
-	n2 = fib(6);
-	escribir n2;
-	si (n2 > 7) {
-		escribir "Es mayor a 7";
-	} sino {
-		escribir "No es mayor a 7";
-	}
-	n1 = 3;
-	mientras (n1 < 10) {
-		n1 = n1 + 1;
-	}
-	escribir n1;
-	leer n1;
-	si (n1 > 5) {
-		escribir "Es mayor a 5";
-	} sino {
-		escribir "No es mayor a 5";
-	}
 } finprog

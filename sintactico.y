@@ -142,7 +142,7 @@ factor:
 ID {poGuion();}
 | ENTERO {poGuion();}
 | REAL {poGuion();}
-| CADENA {poGuion();}
+| CADENA {verificarLongitud(); poGuion();}
 | fib
 | OP_A_PARENT expresion OP_C_PARENT 
 ;
@@ -190,7 +190,7 @@ LEER {po();} ID {poGuion();}
 
 salida:
 ESCRIBIR {pf("escribir");} ID {poGuion();}
-| ESCRIBIR {pf("escribir");} CADENA {poGuion();}
+| ESCRIBIR {pf("escribir");} CADENA {verificarLongitud(); poGuion();}
 ;
 
 sentencias_prints:
@@ -213,7 +213,7 @@ COMA ID {apilarAsigMul(0);} asig_mul constante COMA
 constante:
 ENTERO {apilarAsigMul(1);}
 | REAL {apilarAsigMul(1);}
-| CADENA {apilarAsigMul(1);}
+| CADENA {verificarLongitud(); apilarAsigMul(1);}
 ;
 %%
 int poArray(char* s);
@@ -232,7 +232,7 @@ int desapilarAsignacion();
 int poIDDesapilado(char *id);
 int verificarSiEsCadena(char *token);
 char* concatenarGuionEnCadena(char* cadena);
-
+int verificarLongitud();
 
 int main(int argc, char *argv[]) {
 	if ((yyin = fopen(argv[1], "rt")) == NULL) {
@@ -258,6 +258,13 @@ int yyerror(const char *s) {
 	printf("parser error %s \n ", s);
 	return 0;
 
+}
+
+int verificarLongitud() {
+	if (strlen(yytext) >= 49) {
+		printf("ERROR FATAL: La cadena %s excede la cantidad de caracteres maxima\n", yytext);
+		exit(1);
+	}
 }
 
 int p() {
