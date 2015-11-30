@@ -1,6 +1,6 @@
 del intermedia.txt
 
-c:\GnuWin32\bin\flex Prueba_Lexico.l
+c:\GnuWin32\bin\flex lexico.l
 
 c:\GnuWin32\bin\bison -dyv sintactico.y
 
