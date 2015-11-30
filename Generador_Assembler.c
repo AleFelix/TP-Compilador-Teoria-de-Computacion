@@ -82,7 +82,7 @@ void obtenerInstruccionDeOperador(char *operador);
 void concatenarDelante(char* texto, const char* textoPrevio);
 char* concatenarGuionEnCadena(char* cadena);
 int tienePuntoDecimal(char* token);
-char* agregarFinCadena(char *cadena);
+void agregarFinCadena(char *cadena);
 int verificarSiEsCadena(char *token);
 char* generarRutinasCadenas();
 int esConcatenacion(char *token);
@@ -426,10 +426,11 @@ void declararConstante(char *tipo, char *valor) {
 	char *declaracion = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(declaracion, "\t");
 	if (strcmp(tipo, TIPO_CADENA) == TRUE) {
-		char *nombreCadena = concatenarGuionEnCadena(valor);
+		char *nombreCadena = malloc(sizeof(char) * STRING_SIZE);
+		strcpy(nombreCadena,concatenarGuionEnCadena(valor));
 		copiarElementoAMatrizTabla(nombreCadena, tipo, valor);
 		strcat(declaracion, nombreCadena);
-		valor = agregarFinCadena(valor);
+		agregarFinCadena(valor);
 		int longStr = longString(valor);
 		int espacioSobrante = MAX_TAM_TEXT - longStr + 2;
 		char buffer[10];
@@ -439,6 +440,8 @@ void declararConstante(char *tipo, char *valor) {
 		strcat(declaracion, ",'$', ");
 		strcat(declaracion, buffer);
 		strcat(declaracion, " dup (?)");
+		free(valor);
+		free(nombreCadena);
 	} else {
 		char *nombreNumero = malloc(sizeof(char) * 30);
 		strcpy(nombreNumero, "_");
@@ -763,7 +766,7 @@ int tienePuntoDecimal(char* token) {
 	}
 }
 
-char* agregarFinCadena(char *cadena) {
+void agregarFinCadena(char *cadena) {
 	char *copia;
 	copia = malloc(sizeof(char) * strlen(cadena));
 	strcpy(copia, cadena);
@@ -771,14 +774,13 @@ char* agregarFinCadena(char *cadena) {
 	// Determino el nuevo tamaño
 	int newSize = strlen("$") + strlen(copia) + 1;
 	// Malloc del nuevo tamaño en una nueva variable
-	char * newBuffer = (char *) malloc(newSize);
+	cadena = (char *) malloc(newSize);
 	// Copiamos y concatenamos
-	strcpy(newBuffer, "\"");
+	strcpy(cadena, "\"");
 	contenido = strtok(copia, "\"");
-	strcat(newBuffer, contenido);
-	strcat(newBuffer, "$\"");
+	strcat(cadena, contenido);
+	strcat(cadena, "$\"");
 	free(copia);
-	return newBuffer;
 }
 
 int sonDelMismoTipo(char* token1, char* token2) {
