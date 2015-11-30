@@ -41,7 +41,6 @@ CADENA        {COMILLAS}({LETRA}|{DIGITO}|{PUNTO}|{ESPACIO})*{COMILLAS}
 "define"        { return DEFINE;}
 "fdefine"        { return FDEFINE;}
 "fib"      { return FIB;}
-"take"    { return TAKE;}
 "entero"    { encola("entero"); return T_ENTERO;  }
 "real"    { encola("real"); return T_REAL;  }
 "cadena"    {  encola("cadena"); return T_CADENA;}

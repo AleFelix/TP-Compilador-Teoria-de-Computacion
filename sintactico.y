@@ -51,7 +51,6 @@ int indicePilaAsig = 0;
 %token T_REAL
 %token T_CADENA
 %token FIB
-%token TAKE
 %token PUNTO_COMA
 %token COMA
 %token DOS_PUNTOS
@@ -140,12 +139,11 @@ termino OP_MULTIP factor  {pf("*");}
 ;
 
 factor:
-ID {poID();}
-| ENTERO {po();}
-| REAL {po();}
-| CADENA {po();}
+ID {poGuion();}
+| ENTERO {poGuion();}
+| REAL {poGuion();}
+| CADENA {poGuion();}
 | fib
-| take
 | OP_A_PARENT expresion OP_C_PARENT 
 ;
 
@@ -156,14 +154,6 @@ FIB OP_A_PARENT expresion_fib OP_C_PARENT
 expresion_fib:
 ID {insertarFIB(yytext);}
 | ENTERO {insertarFIB(yytext);}
-
-take:
-TAKE OP_A_PARENT {po();} elementos_take OP_C_PARENT {po();}
-;
-
-elementos_take:
-operador PUNTO_COMA {po();} ENTERO {po();} PUNTO_COMA {po();} lista_enteros
-;
 
 bucle:
 MIENTRAS OP_A_PARENT  {reservar(1);} condicion {reservar(2);} OP_C_PARENT  A_LLAVES  sentencias C_LLAVES  {reservar(3);} 
@@ -195,12 +185,12 @@ sino:
 | {reservarIf(2);} SINO A_LLAVES sentencias {reservarIf(3);} C_LLAVES  {/*reservarIf(4);*/}
 ;
 entrada:
-LEER {po();} ID {poID();}
+LEER {po();} ID {poGuion();}
 ;
 
 salida:
-ESCRIBIR {po();} ID {poID();}
-| ESCRIBIR {po();} CADENA {po();}
+ESCRIBIR {pf("escribir");} ID {poGuion();}
+| ESCRIBIR {pf("escribir");} CADENA {poGuion();}
 ;
 
 sentencias_prints:
@@ -217,29 +207,13 @@ OP_A_CORCH  ID {apilarAsigMul(0);} asig_mul constante OP_C_CORCH {apilarAsigMul(
 
 asig_mul:
 COMA ID {apilarAsigMul(0);} asig_mul constante COMA 
-| OP_C_CORCH  ASIGNACION OP_A_CORCH 
+| OP_C_CORCH ASIGNACION OP_A_CORCH 
 ;
 
 constante:
 ENTERO {apilarAsigMul(1);}
 | REAL {apilarAsigMul(1);}
 | CADENA {apilarAsigMul(1);}
-;
-
-operador:
-OP_SUMA {po();}
-| OP_MENOS {po();}
-| OP_MULTIP {po();}
-| OP_DIV {po();}
-;
-
-lista_enteros:
-lis_ent ENTERO {po();} OP_C_CORCH {po();}
-;
-
-lis_ent:
-lis_ent ENTERO {po();} PUNTO_COMA {po();}
-| OP_A_CORCH {po();}
 ;
 %%
 int poArray(char* s);
@@ -256,6 +230,8 @@ void operador(char* op);
 int apilarAsignacion();
 int desapilarAsignacion();
 int poIDDesapilado(char *id);
+int verificarSiEsCadena(char *token);
+char* concatenarGuionEnCadena(char* cadena);
 
 
 int main(int argc, char *argv[]) {
@@ -307,7 +283,7 @@ int po() {
  */
 int apilarAsignacion() {
 	strcpy(pilaElementosAsignaciones[indicePilaAsig],yytext);
-	printf("Apilada la asignacion de %s",yytext);
+	printf("Apilada la asignacion de %s\n",yytext);
 	indicePilaAsig++;
 }
 
@@ -329,22 +305,45 @@ int poIDDesapilado(char *id) {
 		char *guion = "_";
 		poArray(concatenarStrings(guion, id));
 	} else {
-		printf("ERROR FATAL: La variable %s no fue declarada previamente", id);
+		printf("ERROR FATAL: La variable %s no fue declarada previamente\n", id);
 		exit(1);
 	}
 
 }
 
 /**
- * Almacena un ID en la Polaca Inversa.
+ * Almacena un ID o constante en la Polaca Inversa.
  * Le agrega el guion bajo adelante
  */
-int poID() {
-	if (buscEnTabla(yytext) == 0) {
-		char *guion = "_";
-		poArray(concatenarStrings(guion, yytext));
+int poGuionManual(char *token) {
+	if (buscEnTabla(token) == 0) {
+		if (verificarSiEsCadena(token) == 0) {
+			poArray(concatenarGuionEnCadena(token));
+		} else {
+			char *guion = "_";
+			poArray(concatenarStrings(guion, token));
+		}
 	} else {
-		printf("ERROR FATAL: La variable %s no fue declarada previamente", yytext);
+		printf("ERROR FATAL: La variable %s no fue declarada previamente\n", token);
+		exit(1);
+	}
+
+}
+
+/**
+ * Almacena un ID o constante en la Polaca Inversa.
+ * Le agrega el guion bajo adelante
+ */
+int poGuion() {
+	if (buscEnTabla(yytext) == 0) {
+		if (verificarSiEsCadena(yytext) == 0) {
+			poArray(concatenarGuionEnCadena(yytext));
+		} else {
+			char *guion = "_";
+			poArray(concatenarStrings(guion, yytext));
+		}
+	} else {
+		printf("ERROR FATAL: La variable %s no fue declarada previamente\n", yytext);
 		exit(1);
 	}
 
@@ -423,7 +422,7 @@ int reservar(int a) {
 			itoa(desapilar(),s,10);
 			concatenarDelante(s,"ET_");
 			pf(s);
-			pf("BI");
+			pf("JMP");
 			//Se agrega la etiqueta del final del while.
 			itoa(etiq_final,s,10);
 			concatenarDelante(s,"ET_");
@@ -474,7 +473,7 @@ int reservarYO(int a) {
 			itoa(etiq_final,s,10);
 			concatenarDelante(s,"ET_");
 			pf(s);
-			pf("BI");
+			pf("JMP");
 			itoa(tope,s,10);
 			concatenarDelante(s,"ET_");
 			strcat(s,":");
@@ -515,7 +514,7 @@ int reservarIf(int a) {
 			itoa(indice+3,s,10);
 			concatenarDelante(s,"ET_");
 			pf(s);
-			pf("BI");
+			pf("JMP");
 			itoa(etiq_final,s,10);
 			concatenarDelante(s,"ET_");
 			strcat(s,":");
@@ -582,17 +581,17 @@ void operador(char* op) {
  */
 char* averiguarOperador(char* op) {
 	if (strcmp(op, ">=") == 0) {
-		return "BLT";
+		return "JB";
 	} else if (strcmp(op, "> ") == 0) {
-		return "BLE";
+		return "JBE";
 	} else if (strcmp(op, "<=") == 0) {
-		return "BGT";
+		return "JA";
 	} else if (strcmp(op, "< ") == 0) {
-		return "BGE";
+		return "JAE";
 	} else if (strcmp(op, "!=") == 0) {
-		return "BEQ";
+		return "JE";
 	} else if (strcmp(op, "==") == 0) {
-		return "BNE";
+		return "JNE";
 	} else {
 		return "ERROR-BUSQUEDA-OP";
 	};
@@ -605,26 +604,23 @@ char* averiguarOperador(char* op) {
  */
 char* averiguarOperadorVerdadero(char* op) {
 	if (strcmp(op, ">=") == 0) {
-		return "BGE";
+		return "JAE";
 	} else if (strcmp(op, "> ") == 0) {
-		return "BGT";
+		return "JA";
 	} else if (strcmp(op, "<=") == 0) {
-		return "BLE";
+		return "JBE";
 	} else if (strcmp(op, "< ") == 0) {
-		return "BLT";
+		return "JB";
 	} else if (strcmp(op, "!=") == 0) {
-		return "BNE";
+		return "JNE";
 	} else if (strcmp(op, "==") == 0) {
-		return "BEQ";
+		return "JE";
 	} else {
 		return "ERROR-BUSQUEDA-OP";
 	};
 }
 
 int insertarFIB(char* n) {
-     char nn[20];
-	strcpy(nn,n);
-    concatenarDelante(nn,"_");
 	int salto1, salto2, salto3, salto4;
 	char cSalto1[20], cSalto2[20], cSalto3[20], cSalto4[20], defSalto1[20], defSalto2[20], defSalto3[20], defSalto4[20];
 	salto1 = indice + 4;
@@ -655,13 +651,20 @@ int insertarFIB(char* n) {
 	cargarIDAuxEnTabla(valorAnt1, "entero");
 	cargarIDAuxEnTabla(valorAnt2, "entero");
 	cargarIDAuxEnTabla(pos, "entero");
-	char *fibIntermedio[] = { nn, "2", "CMP", cSalto1, "BGE", nn, valorFib, "=", cSalto2, "BI", defSalto1,
-			"0", valorAnt1, "=", "1", valorAnt2, "=", "2", pos, "=", defSalto3, pos, nn, "CMP", cSalto4,
-			"BGT", valorAnt1,valorAnt2, "+", valorFib, "=", valorAnt2, valorAnt1, "=", valorFib, valorAnt2, "=",
-			pos, "1", "+", pos, "=", cSalto3, "BI", defSalto4, defSalto2, valorFib };
+	cargarConstanteAuxEnTabla("0","ENTERO");
+	cargarConstanteAuxEnTabla("1","ENTERO");
+	cargarConstanteAuxEnTabla("2","ENTERO");
+	char *fibIntermedio[] = { n, "2", "CMP", cSalto1, "JAE", n, valorFib, "=", cSalto2, "JMP", defSalto1,
+			"0", valorAnt1, "=", "1", valorAnt2, "=", "2", pos, "=", defSalto3, pos, n, "CMP", cSalto4,
+			"JA", valorAnt1, valorAnt2, "+", valorFib, "=", valorAnt2, valorAnt1, "=", valorFib, valorAnt2, "=",
+			pos, "1", "+", pos, "=", cSalto3, "JMP", defSalto4, defSalto2, valorFib };
 	size_t i = 0;
 	for (i = 0; i < sizeof(fibIntermedio) / sizeof(fibIntermedio[0]); i++) {
-		poArray(fibIntermedio[i]);
+		if (strcmp(fibIntermedio[i],n) == 0 || strcmp(fibIntermedio[i],valorFib) == 0 || strcmp(fibIntermedio[i],valorAnt1) == 0 || strcmp(fibIntermedio[i],valorAnt2) == 0 || strcmp(fibIntermedio[i],pos) == 0 || strcmp(fibIntermedio[i],"0") == 0 || strcmp(fibIntermedio[i],"1") == 0 || strcmp(fibIntermedio[i],"2") == 0) {
+			poGuionManual(fibIntermedio[i]);
+		} else {
+			poArray(fibIntermedio[i]);
+		}
 	}
 }
 
@@ -686,13 +689,42 @@ int apilarAsigMul(int caso) {
 	} else {
 		int i;
 		for (i = 0; i < indexPilaIdAsigMul; i++) {
-			poArray (pilaIdAsigMul[i]);
-			poArray (pilaConstAsigMul[i]);
+			poGuionManual(pilaConstAsigMul[i]);
+			poGuionManual(pilaIdAsigMul[i]);
 			poArray("=");
 		}
 		indexPilaIdAsigMul = 0;
 		indexPilaConstAsigMul = 0;
 	}
+}
+
+int verificarSiEsCadena(char *token) {
+	if (token[0] == '\"') {
+		printf("El token %s es una cadena\n",token);
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+char* concatenarGuionEnCadena(char* cadena) {
+	char *contenido;
+	// Determino el nuevo tamaño
+	int newSize = strlen("T_") + strlen(cadena) + 1;
+	// Malloc del nuevo tamaño en una nueva variable
+	char * newBuffer = (char *) malloc(newSize);
+	// Copiamos y concatenamos
+	strcpy(newBuffer,"T_");
+	contenido = strtok(cadena,"\"");
+	printf("El contenido de la cadena es %s\n",contenido);
+	char *puntero = contenido;
+	for (; *puntero; ++puntero) {
+		if (*puntero == ' ') {
+			*puntero = '_';
+		}	
+	}
+	strcat(newBuffer,contenido);
+	return newBuffer;
 }
 
 /*********************************************
@@ -734,6 +766,12 @@ int iniTabla() {
 	if (tabla == NULL) {
 		printf("\nNo se puede abrir el archivo de la tabla de simbolos\n");
 		exit(1);
+	}
+}
+
+int cargarConstanteAuxEnTabla(char* constante, char* tipo) {
+	if (buscEnTabla(constante) == 1) {
+		fprintf(tabla, "%s;%s;%s;\n", constante, tipo, constante);
 	}
 }
 

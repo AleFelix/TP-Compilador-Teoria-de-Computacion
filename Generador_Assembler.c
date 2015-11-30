@@ -21,7 +21,6 @@
 #define TIPO_CADENA "CADENA"
 #define TIPO_ENTERO "ENTERO"
 #define TIPO_REAL "REAL"
-#define PREFIJO_CONSTANTES "zv"
 #define PREFIJO_ETIQUETAS "ET_"
 
 FILE *tabla;
@@ -35,11 +34,9 @@ char colaTokens[TAMANIO_COLA][TAMANIO_ELEM];
 char etiquetaEncontrada[TAMANIO_ELEM];
 int ultimoTokenFueOperador = FALSE;
 int anteUltimoTokenFueOperador = FALSE;
-
-char *valorFib = "AUX_valorFib";
-char *valorAnt1 = "AUX_valorAnterior1";
-char *valorAnt2 = "AUX_valorAnterior2";
-char *pos = "AUX_posicion";
+int lectura = FALSE;
+int escritura = FALSE;
+int concatenacion = FALSE;
 
 void declararVariables();
 void declararID(char *nombreID, char *tipoID);
@@ -49,12 +46,16 @@ void declararAux();
 void generarCabecera();
 void generarInicioCodigo();
 void generarCodigo();
+void insertarLectura(char *token);
+void insertarEscritura(char *token);
 void insertarOperacionCompleja(char *variable, char *operador);
 void insertarOperacionSimple(char *valor1, char*valor2, char *operador);
 void insertarComparacion(char *valor1, char*valor2);
 void insertarSalto(char *token);
 void insertarAsignacionCompleja(char *variable);
 void insertarAsignacionSimple(char *valor, char *variable);
+void insertarAsignacionConcatenadaCadena(char *valor1, char *valor2, char *variable);
+void insertarAsignacionSimpleCadena(char *valor, char *variable);
 void insertarDefEtiquetaASM(char *linea);
 void generarFinCodigo();
 void iniAssembler();
@@ -67,9 +68,10 @@ int obtenerSiguienteTokenPolaca(char *token);
 void iniTabla();
 void cerrTabla();
 void cargarArrayDeTabla(int cantLineasTabla, char arreglo[][TAMANIO_ELEM]);
-void buscarConstanteEnMatrizTabla(char* valor);
 int contarLineas(FILE *file);
 void lineasToArray(FILE *file, char array[][TAMANIO_LINEA]);
+int esEscrituraOLectura(char* token);
+int esEscritura(char* token);
 int esOperador(char* token);
 int esAsignacion(char* token);
 int esComparacion(char* token);
@@ -78,6 +80,13 @@ int esDefinicionDeEtiqueta(char* token);
 int esSalto(char *token);
 void obtenerInstruccionDeOperador(char *operador);
 void concatenarDelante(char* texto, const char* textoPrevio);
+char* concatenarGuionEnCadena(char* cadena);
+int tienePuntoDecimal(char* token);
+char* agregarFinCadena(char *cadena);
+int verificarSiEsCadena(char *token);
+char* generarRutinasCadenas();
+int esConcatenacion(char *token);
+void insertaresperaTecla();
 
 int main(int argc, char *argv[]) {
 	iniTabla();
@@ -103,61 +112,118 @@ int main(int argc, char *argv[]) {
 
 void generarCodigo() {
 	char token[TAMANIO_LINEA];
+	char aux0[TAMANIO_LINEA];
 	char aux1[TAMANIO_LINEA];
 	char aux2[TAMANIO_LINEA];
 	while (obtenerSiguienteTokenPolaca(token) == TRUE) {
-		if (esOperador(token) == FALSE) {
-			if (esEtiqueta(token) == FALSE) {
-				if (esComparacion(token) == FALSE) {
-					if (esSalto(token) == TRUE) {
-						insertarSalto(token);
-					} else {
-						encolarToken(token);
-						printf("ENCOLE: %s\n", token);
+		if (lectura == TRUE) {
+			insertarLectura(token);
+			lectura = FALSE;
+		} else if (escritura == TRUE) {
+			insertarEscritura(token);
+			escritura = FALSE;
+		} else if (esConcatenacion(token) == TRUE) {
+			concatenacion = TRUE;
+		} else if (esEscrituraOLectura(token) == FALSE) {
+			if (esOperador(token) == FALSE) {
+				if (esEtiqueta(token) == FALSE) {
+					if (esComparacion(token) == FALSE) {
+						if (esSalto(token) == TRUE) { //Es salto
+							insertarSalto(token);
+						} else { //Es ID o constante
+							encolarToken(token);
+							printf("ENCOLE: %s\n", token);
+						}
+					} else { //Es comparacion
+						desencolarToken(aux2);
+						desencolarToken(aux1);
+						insertarComparacion(aux1, aux2);
 					}
-				} else {
-					desencolarToken(aux2);
-					desencolarToken(aux1);
-					buscarConstanteEnMatrizTabla(aux1);
-					buscarConstanteEnMatrizTabla(aux2);
-					insertarComparacion(aux1, aux2);
+				} else { //Es etiqueta
+					if (esDefinicionDeEtiqueta(token) == TRUE) {
+						insertarDefEtiquetaASM(token);
+					} else {
+						strcpy(etiquetaEncontrada, token);
+					}
 				}
-			} else {
-				if (esDefinicionDeEtiqueta(token) == TRUE) {
-					insertarDefEtiquetaASM(token);
-				} else {
-					strcpy(etiquetaEncontrada, token);
+				anteUltimoTokenFueOperador = ultimoTokenFueOperador;
+				ultimoTokenFueOperador = FALSE;
+			} else { //Es operador
+				if (esAsignacion(token) == TRUE) { //El operador es asignacion
+					if (anteUltimoTokenFueOperador == TRUE) {
+						desencolarToken(aux1);
+						insertarAsignacionCompleja(aux1);
+					} else {
+						desencolarToken(aux2);
+						desencolarToken(aux1);
+						if (verificarSiEsCadena(aux1) == TRUE) {
+							if (concatenacion == TRUE) {
+								desencolarToken(aux0);
+								insertarAsignacionConcatenadaCadena(aux0, aux1, aux2);
+								concatenacion = FALSE;
+							} else {
+								insertarAsignacionSimpleCadena(aux1, aux2);
+							}
+						} else {
+							insertarAsignacionSimple(aux1, aux2);
+						}
+					}
+				} else { //El operador no es asignacion
+					if (ultimoTokenFueOperador == TRUE || anteUltimoTokenFueOperador == TRUE) {
+						desencolarToken(aux1);
+						insertarOperacionCompleja(aux1, token);
+					} else {
+						desencolarToken(aux2);
+						desencolarToken(aux1);
+						insertarOperacionSimple(aux1, aux2, token);
+					}
 				}
+				anteUltimoTokenFueOperador = ultimoTokenFueOperador;
+				ultimoTokenFueOperador = TRUE;
 			}
-			anteUltimoTokenFueOperador = ultimoTokenFueOperador;
-			ultimoTokenFueOperador = FALSE;
-		} else {
-			if (esAsignacion(token) == TRUE) {
-				if (anteUltimoTokenFueOperador == TRUE) {
-					desencolarToken(aux1);
-					insertarAsignacionCompleja(aux1);
-				} else {
-					desencolarToken(aux2);
-					desencolarToken(aux1);
-					buscarConstanteEnMatrizTabla(aux1);
-					insertarAsignacionSimple(aux1, aux2);
-				}
+		} else { //Es escritura o lectura
+			if (esEscritura(token) == TRUE) {
+				escritura = TRUE;
 			} else {
-				if (ultimoTokenFueOperador == TRUE || anteUltimoTokenFueOperador == TRUE) {
-					desencolarToken(aux1);
-					insertarOperacionCompleja(aux1, token);
-				} else {
-					desencolarToken(aux2);
-					desencolarToken(aux1);
-					buscarConstanteEnMatrizTabla(aux1);
-					buscarConstanteEnMatrizTabla(aux2);
-					insertarOperacionSimple(aux1, aux2, token);
-				}
+				lectura = TRUE;
 			}
-			anteUltimoTokenFueOperador = ultimoTokenFueOperador;
-			ultimoTokenFueOperador = TRUE;
 		}
 	}
+}
+
+void insertaresperaTecla() {
+	char *linea = malloc(sizeof(char) * STRING_SIZE);
+	strcpy(linea, "\tmov dx,OFFSET _NEWLINE\n\tmov ah,09\n\tint 21h\n\tmov dx,OFFSET _msgPRESIONE\n\tmov ah,09\n\tint 21h\n\tmov ah, 1\n\tint 21h");
+	fprintf(assembler, "%s\n", linea);
+	free(linea);
+}
+
+void insertarLectura(char *token) {
+	char *linea = malloc(sizeof(char) * STRING_SIZE);
+	if (verificarSiEsCadena(token) == TRUE) {
+		strcpy(linea, "\tgetString ");
+		strcat(linea, token);
+	} else {
+		strcpy(linea, "\tGetFloat ");
+		strcat(linea, token);
+	}
+	fprintf(assembler, "%s\n", linea);
+	free(linea);
+}
+
+void insertarEscritura(char *token) {
+	char *linea = malloc(sizeof(char) * STRING_SIZE);
+	if (verificarSiEsCadena(token) == TRUE) {
+		strcpy(linea, "\tmov dx,OFFSET ");
+		strcat(linea, token);
+		strcat(linea, "\n\tmov ah,9\n\tint 21h\n\tnewLine 1");
+	} else {
+		strcpy(linea, "\tdisplayFloat ");
+		strcat(linea, token);
+		strcat(linea, ",2\n\tnewLine 1");
+	}
+	fprintf(assembler, "%s\n", linea);
+	free(linea);
 }
 
 void insertarOperacionCompleja(char *variable, char *operador) {
@@ -223,6 +289,30 @@ void insertarAsignacionSimple(char *valor, char *variable) {
 	free(linea);
 }
 
+void insertarAsignacionConcatenadaCadena(char *valor1, char *valor2, char *variable) {
+	char *linea = malloc(sizeof(char) * STRING_SIZE);
+	strcpy(linea, "\tmov si,OFFSET ");
+	strcat(linea, valor1);
+	strcat(linea, "\n\tmov di,OFFSET _aux\n\tcall COPIAR\n\tmov si,OFFSET ");
+	strcat(linea, valor2);
+	strcat(linea, "\n\tmov di,OFFSET _aux\n\tcall CONCAT\n\tmov si,OFFSET _aux\n\tmov di,OFFSET ");
+	strcat(linea, variable);
+	strcat(linea, "\n\tcall COPIAR");
+	fprintf(assembler, "%s\n", linea);
+	free(linea);
+}
+
+void insertarAsignacionSimpleCadena(char *valor, char *variable) {
+	char *linea = malloc(sizeof(char) * STRING_SIZE);
+	strcpy(linea, "\tmov si,OFFSET ");
+	strcat(linea, valor);
+	strcat(linea, "\n\tmov di,OFFSET ");
+	strcat(linea, variable);
+	strcat(linea, "\n\tcall COPIAR");
+	fprintf(assembler, "%s\n", linea);
+	free(linea);
+}
+
 void insertarDefEtiquetaASM(char *linea) {
 	fprintf(assembler, "%s\n", linea);
 }
@@ -241,7 +331,6 @@ void declararVariables() {
 		if (posElemento == POS_TIPO_TABLA) {
 			if (strcmp(valoresTabla[i], TIPO_ID) == TRUE) {
 				declararID(valoresTabla[i - 1], valoresTabla[i + 1]);
-				copiarElementoAMatrizTabla(valoresTabla[i - 1], valoresTabla[i], valoresTabla[i + 1]);
 			} else {
 				declararConstante(valoresTabla[i], valoresTabla[i + 1]);
 			}
@@ -261,52 +350,62 @@ void copiarElementoAMatrizTabla(char *nombre, char *tipo, char *valorOTipoID) {
 void declararID(char *nombreID, char *tipoID) {
 	char *declaracion = malloc(sizeof(char) * STRING_SIZE);
 	char *tipo = malloc(sizeof(char) * 30);
+	char *nombreGuionID = malloc(sizeof(char) * STRING_SIZE);
+	strcpy(nombreGuionID, "_");
+	strcat(nombreGuionID, nombreID);
+	copiarElementoAMatrizTabla(nombreGuionID, TIPO_ID, tipoID);
 	if (strcmp(tipoID, ID_CADENA) == TRUE) {
 		strcpy(tipo, "db\tMAXTEXTSIZE dup (?),'$'");
 	} else {
 		strcpy(tipo, "dd\t?");
 	}
 	strcpy(declaracion, "\t");
-	
-	//fran
-	
-	if((strcmp(nombreID,valorFib) != 0) &&  (strcmp(nombreID,valorAnt1) != 0) && (strcmp(nombreID,valorAnt2) != 0) && (strcmp(nombreID,pos)))
-	{
-	strcat(declaracion, "_");
-    }
-	strcat(declaracion, nombreID);
+	strcat(declaracion, nombreGuionID);
 	strcat(declaracion, "\t\t\t");
 	strcat(declaracion, tipo);
 	fprintf(assembler, "%s\n", declaracion);
 	free(tipo);
+	free(nombreGuionID);
 	free(declaracion);
 }
 
 void declararConstante(char *tipo, char *valor) {
 	char *declaracion = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(declaracion, "\t");
-	strcat(declaracion, PREFIJO_CONSTANTES);
-	char buffer[10];
-	snprintf(buffer, 10, "%d", indiceConstantes);
-	indiceConstantes++;
-	strcat(declaracion, buffer);
-	copiarElementoAMatrizTabla(declaracion, tipo, valor);
 	if (strcmp(tipo, TIPO_CADENA) == TRUE) {
-		strcat(declaracion, "\t\t\tdb\t\"");
-		strcat(declaracion, valor);
-		strcat(declaracion, "\",'$', XX dup (?)");
-	} else {
+		char *nombreCadena = concatenarGuionEnCadena(valor);
+		copiarElementoAMatrizTabla(nombreCadena, tipo, valor);
+		strcat(declaracion, nombreCadena);
+		valor = agregarFinCadena(valor);
+		int longStr = longString(valor);
+		int espacioSobrante = MAX_TAM_TEXT - longStr + 2;
 		char buffer[10];
-		snprintf(buffer, 10, "%d", &valor);
-		strcat(declaracion, "\t\t\tdd\t");
+		snprintf(buffer, 10, "%d", espacioSobrante);
+		strcat(declaracion, "\t\t\tdb\t");
+		strcat(declaracion, valor);
+		strcat(declaracion, ",'$', ");
 		strcat(declaracion, buffer);
+		strcat(declaracion, " dup (?)");
+	} else {
+		char *nombreNumero = malloc(sizeof(char) * 30);
+		strcpy(nombreNumero, "_");
+		strcat(nombreNumero, valor);
+		copiarElementoAMatrizTabla(nombreNumero, tipo, valor);
+		strcat(declaracion, nombreNumero);
+		strcat(declaracion, "\t\t\tdd\t");
+		strcat(declaracion, valor);
+		if (tienePuntoDecimal(valor) == FALSE) {
+			strcat(declaracion, ".0");
+		}
+		free(nombreNumero);
 	}
 	fprintf(assembler, "%s\n", declaracion);
 	free(declaracion);
 }
 
 void declararAux() {
-	char *declaracion = "\taux\t\t\tdb\t?";
+	char *declaracion =
+			"\t_aux\t\t\tdb\tMAXTEXTSIZE dup (?),'$'\n\t_msgPRESIONE\t\t\tdb\t0DH,0AH,\"Presione una tecla para continuar...\",'$'\n\t_NEWLINE\t\t\tdb\t0DH,0AH,'$'";
 	fprintf(assembler, "%s\n", declaracion);
 }
 
@@ -323,12 +422,16 @@ void generarCabecera() {
 }
 
 void generarInicioCodigo() {
-	char *inicioCodigo = "\n.CODE\n\n\tmov AX,@DATA\n\tmov DS,AX\n\tmov es,ax";
-	fprintf(assembler, "%s\n", inicioCodigo);
+	char *inicioCodigo1 = "\n.CODE\n";
+	fprintf(assembler, "%s\n", inicioCodigo1);
+	fprintf(assembler, "%s\n\n", generarRutinasCadenas());
+	char *inicioCodigo2 = "\nSTART:\n\tmov AX,@DATA\n\tmov DS,AX\n\tmov es,ax";
+	fprintf(assembler, "%s\n", inicioCodigo2);
 }
 
 void generarFinCodigo() {
-	char *finCodigo = "\tmov ax, 4C00h\n\tint 21h\n\nEND";
+	insertaresperaTecla();
+	char *finCodigo = "\tmov ax, 4C00h\n\tint 21h\nEND START";
 	fprintf(assembler, "%s\n", finCodigo);
 }
 
@@ -419,19 +522,6 @@ void cargarArrayDeTabla(int cantLineasTabla, char arreglo[][TAMANIO_ELEM]) {
 	}
 }
 
-void buscarConstanteEnMatrizTabla(char* valor) {
-	char* tipoActual;
-	int i;
-	for (i = 0; i < TAMANIO_COLA; i++) {
-		tipoActual = matrizTabla[i][POS_TIPO_TABLA];
-		if (strcmp(tipoActual, TIPO_ID) != 0) {
-			if (strcmp(matrizTabla[i][POS_TIPOID_TABLA], valor) == TRUE) {
-				strcpy(valor, matrizTabla[i][POS_NOMBRE_TABLA]);
-			}
-		}
-	}
-}
-
 /*********************************************
  *
  *    METODOS AUXILIARES
@@ -468,6 +558,24 @@ void lineasToArray(FILE *file, char array[][TAMANIO_LINEA]) {
 	}
 }
 
+int esEscrituraOLectura(char* token) {
+	if (strcmp("escribir", token) == TRUE) {
+		return TRUE;
+	} else if (strcmp("leer", token) == TRUE) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+int esEscritura(char* token) {
+	if (strcmp("escribir", token) == TRUE) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
 int esOperador(char* token) {
 	if (strcmp("=", token) == TRUE) {
 		return TRUE;
@@ -478,8 +586,6 @@ int esOperador(char* token) {
 	} else if (strcmp("*", token) == TRUE) {
 		return TRUE;
 	} else if (strcmp("/", token) == TRUE) {
-		return TRUE;
-	} else if (strcmp("++", token) == TRUE) {
 		return TRUE;
 	} else {
 		return FALSE;
@@ -519,19 +625,19 @@ int esDefinicionDeEtiqueta(char* token) {
 }
 
 int esSalto(char *token) {
-	if (strcmp("BGE", token) == TRUE) {
+	if (strcmp("JAE", token) == TRUE) {
 		return TRUE;
-	} else if (strcmp("BGT", token) == TRUE) {
+	} else if (strcmp("JA", token) == TRUE) {
 		return TRUE;
-	} else if (strcmp("BLE", token) == TRUE) {
+	} else if (strcmp("JBE", token) == TRUE) {
 		return TRUE;
-	} else if (strcmp("BLT", token) == TRUE) {
+	} else if (strcmp("JB", token) == TRUE) {
 		return TRUE;
-	} else if (strcmp("BNE", token) == TRUE) {
+	} else if (strcmp("JNE", token) == TRUE) {
 		return TRUE;
-	} else if (strcmp("BEQ", token) == TRUE) {
+	} else if (strcmp("JE", token) == TRUE) {
 		return TRUE;
-	} else if (strcmp("BI", token) == TRUE) {
+	} else if (strcmp("JMP", token) == TRUE) {
 		return TRUE;
 	} else {
 		return FALSE;
@@ -552,7 +658,6 @@ void obtenerInstruccionDeOperador(char *operador) {
 	}
 }
 
-
 void concatenarDelante(char* texto, const char* textoPrevio) {
 	size_t longitud = strlen(textoPrevio);
 	size_t i;
@@ -562,4 +667,175 @@ void concatenarDelante(char* texto, const char* textoPrevio) {
 	}
 }
 
+int longString(char *string) {
+	size_t longitud = 0;
+	char *p = malloc(STRING_SIZE);
+	strcpy(p, string);
+	while (*p++ != '\0') {
+		longitud++;
+	}
+	longitud = longitud / sizeof(char);
+	free(p);
+	return longitud;
+}
 
+char* concatenarGuionEnCadena(char* cadena) {
+	char *copia;
+	copia = malloc(sizeof(char) * strlen(cadena));
+	strcpy(copia, cadena);
+	char *contenido;
+	// Determino el nuevo tamaño
+	int newSize = strlen("T_") + strlen(copia) + 1;
+	// Malloc del nuevo tamaño en una nueva variable
+	char * newBuffer = (char *) malloc(newSize);
+	// Copiamos y concatenamos
+	strcpy(newBuffer, "T_");
+	contenido = strtok(copia, "\"");
+	printf("El contenido de la cadena es %s\n", contenido);
+	char *puntero = contenido;
+	for (; *puntero; ++puntero) {
+		if (*puntero == ' ') {
+			*puntero = '_';
+		}
+	}
+	strcat(newBuffer, contenido);
+	free(copia);
+	return newBuffer;
+}
+
+int tienePuntoDecimal(char* token) {
+	if (strstr(token, ".") != NULL) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+char* agregarFinCadena(char *cadena) {
+	char *copia;
+	copia = malloc(sizeof(char) * strlen(cadena));
+	strcpy(copia, cadena);
+	char *contenido;
+	// Determino el nuevo tamaño
+	int newSize = strlen("$") + strlen(copia) + 1;
+	// Malloc del nuevo tamaño en una nueva variable
+	char * newBuffer = (char *) malloc(newSize);
+	// Copiamos y concatenamos
+	strcpy(newBuffer, "\"");
+	contenido = strtok(copia, "\"");
+	strcat(newBuffer, contenido);
+	strcat(newBuffer, "$\"");
+	free(copia);
+	return newBuffer;
+}
+
+int verificarSiEsCadena(char *token) {
+	char* tipoActual;
+	int i;
+	for (i = 0; i < TAMANIO_COLA; i++) {
+		if (strcmp(matrizTabla[i][POS_NOMBRE_TABLA], token) == TRUE) {
+			tipoActual = matrizTabla[i][POS_TIPO_TABLA];
+			if (strcmp(tipoActual, TIPO_ID) == TRUE) {
+				if (strcmp(matrizTabla[i][POS_TIPOID_TABLA], ID_CADENA) == TRUE) {
+					printf("El token %s es una cadena\n", token);
+					return TRUE;
+				} else {
+					printf("El token %s no es una cadena\n", token);
+					return FALSE;
+				}
+			} else if (strcmp(tipoActual, TIPO_CADENA) == TRUE) {
+				printf("El token %s es una cadena\n", token);
+				return TRUE;
+			} else {
+				printf("El token %s no es una cadena\n", token);
+				return FALSE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+int esConcatenacion(char *token) {
+	if (strcmp("++", token) == TRUE) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+char* generarRutinasCadenas() {
+	return "\
+;************************************************************\n\
+; devuelve en BX la cantidad de caracteres que tiene un string\n\
+; DS:SI apunta al string.\n\
+;\n\
+STRLEN PROC\n\
+\tmov bx,0\n\
+STRL01:\n\
+\tcmp BYTE PTR [SI+BX],'$'\n\
+\tje STREND\n\
+\tinc BX\n\
+\tjmp STRL01\n\
+STREND:\n\
+\tret\n\
+STRLEN ENDP\n\
+\n\
+\n\
+;*********************************************************************8\n\
+; copia DS:SI a ES:DI; busca la cantidad de caracteres\n\
+;\n\
+COPIAR PROC\n\
+\tcall STRLEN\n\
+\tcmp bx,MAXTEXTSIZE\n\
+\tjle COPIARSIZEOK\n\
+\tmov bx,MAXTEXTSIZE\n\
+COPIARSIZEOK:\n\
+\tmov cx,bx\n\
+\tcld\n\
+\trep movsb\n\
+\tmov al,'$'\n\
+\tmov BYTE PTR [DI],al\n\
+\tret\n\
+COPIAR ENDP\n\
+\n\
+\n\
+;*******************************************************\n\
+; concatena DS:SI al final de ES:DI.\n\
+;\n\
+; busco el size del primer string\n\
+; sumo el size del segundo string\n\
+; si la suma excede MAXTEXTSIZE, copio solamente MAXTEXTSIZE caracteres\n\
+; si la suma NO excede MAXTEXTSIZE, copio el total de caracteres que tiene el segundo string\n\
+;\n\
+CONCAT PROC\n\
+\tpush ds\n\
+\tpush si\n\
+\tcall STRLEN\n\
+\tmov dx,bx\n\
+\tmov si,di\n\
+\tpush es\n\
+\tpop ds\n\
+\tcall STRLEN\n\
+\tadd di,bx\n\
+\tadd bx,dx\n\
+\tcmp bx,MAXTEXTSIZE\n\
+\tjg CONCATSIZEMAL\n\
+CONCATSIZEOK:\n\
+\tmov cx,dx\n\
+\tjmp CONCATSIGO\n\
+CONCATSIZEMAL:\n\
+\tsub bx,MAXTEXTSIZE\n\
+\tsub dx,bx\n\
+\tmov cx,dx\n\
+CONCATSIGO:\n\
+\tpush ds\n\
+\tpop es\n\
+\tpop si\n\
+\tpop ds\n\
+\tcld\n\
+\trep movsb\n\
+\tmov al,'$'\n\
+\tmov BYTE PTR [DI],al\n\
+\tret\n\
+CONCAT ENDP";
+}

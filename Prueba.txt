@@ -1,14 +1,34 @@
 inicioprog {
 	define
-		[entero,entero,entero,entero,entero]:[a,b,c,d,e];
+		[entero,entero,cadena,cadena,cadena]:[n1,n2,t1,t2,t3];
 	fdefine
-	a=b+c*d-e;
-	c=d+e;
-	a=d;
-	c=fib(b);
-	si (a < b) {
-		a = 125;	
+	n1 = 3;
+	n2 = 5;
+	t1 = "Hola ";
+	t2 = "Mundo";
+	t3 = t1 ++ t2;
+	escribir t3;
+	escribir n1;
+	escribir n2;
+	n1 = n1 + n2;
+	escribir n1;
+	escribir "Esto funciona";
+	n2 = fib(6);
+	escribir n2;
+	si (n2 > 7) {
+		escribir "Es mayor a 7";
 	} sino {
-		a = d * e;
+		escribir "No es mayor a 7";
+	}
+	n1 = 3;
+	mientras (n1 < 10) {
+		n1 = n1 + 1;
+	}
+	escribir n1;
+	leer n1;
+	si (n1 > 5) {
+		escribir "Es mayor a 5";
+	} sino {
+		escribir "No es mayor a 5";
 	}
 } finprog
