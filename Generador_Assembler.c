@@ -197,6 +197,7 @@ void insertarEsperaTecla() {
 	char *linea = malloc(sizeof(char) * STRING_SIZE);
 	strcpy(linea, "\tmov dx,OFFSET _NEWLINE\n\tmov ah,09\n\tint 21h\n\tmov dx,OFFSET _msgPRESIONE\n\tmov ah,09\n\tint 21h\n\tmov ah, 1\n\tint 21h");
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -210,6 +211,7 @@ void insertarLectura(char *token) {
 		strcat(linea, token);
 	}
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -225,6 +227,7 @@ void insertarEscritura(char *token) {
 		strcat(linea, ",2\n\tnewLine 1");
 	}
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -240,6 +243,7 @@ void insertarOperacionCompleja(char *variable, char *operador) {
 	strcat(linea, "\n\t");
 	strcat(linea, operador);
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -257,6 +261,7 @@ void insertarOperacionSimple(char *valor1, char*valor2, char *operador) {
 	strcat(linea, "\n\t");
 	strcat(linea, operador);
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -272,6 +277,7 @@ void insertarComparacion(char *valor1, char*valor2) {
 	strcat(linea, valor2);
 	strcat(linea, "\n\tfxch\n\tfcomp\n\tfstsw ax\n\tffree st(0)\n\tsahf");
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -282,6 +288,7 @@ void insertarSalto(char *token) {
 	strcat(linea, " ");
 	strcat(linea, etiquetaEncontrada);
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -297,6 +304,7 @@ void insertarAsignacionCompleja(char *variable) {
 	strcpy(linea, "\tfstp ");
 	strcat(linea, variable);
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -314,6 +322,7 @@ void insertarAsignacionSimple(char *valor, char *variable) {
 	strcat(linea, "\n\tfstp ");
 	strcat(linea, variable);
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -340,6 +349,7 @@ void insertarAsignacionConcatenadaCadena(char *valor1, char *valor2, char *varia
 	strcat(linea, variable);
 	strcat(linea, "\n\tcall COPIAR");
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -361,6 +371,7 @@ void insertarAsignacionSimpleCadena(char *valor, char *variable) {
 	strcat(linea, variable);
 	strcat(linea, "\n\tcall COPIAR");
 	fprintf(assembler, "%s\n", linea);
+	//Seguro
 	free(linea);
 }
 
@@ -417,8 +428,11 @@ void declararID(char *nombreID, char *tipoID) {
 	strcat(declaracion, "\t\t\t");
 	strcat(declaracion, tipo);
 	fprintf(assembler, "%s\n", declaracion);
+	//Seguro
 	free(tipo);
+	//Seguro
 	free(nombreGuionID);
+	//Seguro
 	free(declaracion);
 }
 
@@ -440,8 +454,8 @@ void declararConstante(char *tipo, char *valor) {
 		strcat(declaracion, ",'$', ");
 		strcat(declaracion, buffer);
 		strcat(declaracion, " dup (?)");
-		free(valor);
-		free(nombreCadena);
+		//free(valor);
+		//free(nombreCadena);
 	} else {
 		char *nombreNumero = malloc(sizeof(char) * 30);
 		strcpy(nombreNumero, "_");
@@ -453,9 +467,11 @@ void declararConstante(char *tipo, char *valor) {
 		if (tienePuntoDecimal(valor) == FALSE) {
 			strcat(declaracion, ".0");
 		}
+		//Seguro
 		free(nombreNumero);
 	}
 	fprintf(assembler, "%s\n", declaracion);
+	//Seguro
 	free(declaracion);
 }
 
@@ -474,6 +490,7 @@ void generarCabecera() {
 	strcat(cabecera, buffer);
 	strcat(cabecera, "\n\n.DATA\n");
 	fprintf(assembler, "%s\n", cabecera);
+	//Seguro
 	free(cabecera);
 }
 
@@ -574,6 +591,7 @@ void cargarArrayDeTabla(int cantLineasTabla, char arreglo[][TAMANIO_ELEM]) {
 			strcpy(arreglo[j++], token);
 			token = strtok(NULL, ";");
 		}
+		//Seguro
 		free(linea);
 	}
 }
@@ -731,7 +749,7 @@ int longString(char *string) {
 		longitud++;
 	}
 	longitud = longitud / sizeof(char);
-	free(p);
+	//free(p);
 	return longitud;
 }
 
@@ -754,7 +772,7 @@ char* concatenarGuionEnCadena(char* cadena) {
 		}
 	}
 	strcat(newBuffer, contenido);
-	free(copia);
+	//free(copia);
 	return newBuffer;
 }
 
@@ -780,7 +798,7 @@ void agregarFinCadena(char *cadena) {
 	contenido = strtok(copia, "\"");
 	strcat(cadena, contenido);
 	strcat(cadena, "$\"");
-	free(copia);
+	//free(copia);
 }
 
 int sonDelMismoTipo(char* token1, char* token2) {

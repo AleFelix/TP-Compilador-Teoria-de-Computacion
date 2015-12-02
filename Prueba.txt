@@ -1,6 +1,6 @@
 inicioprog {
 	define
-		[entero,entero,entero,entero,cadena,cadena,cadena]:[nAux,n1,n2,n3,t1,t2,t3];
+		[entero,entero,entero,entero,cadena,cadena,cadena,entero]:[nAux,n1,n2,n3,t1,t2,t3,t4];
 	fdefine
 	escribir "Bienvenido al sistema de pruebas";
 	escribir "Ingrese un numero por favor";
@@ -64,9 +64,10 @@ inicioprog {
 	escribir n3;
 	[n1,n2,n3,t1,t2] = [1,2,3,"Gracias por ","realizar la prueba"];
 	escribir "Terminando en";
-	escribir n3;
-	escribir n2;
-	escribir n1;
-	t3 = t1 ++ t2;
-	escribir t3;
+	t4 = 4;
+	mientras(t4 > 0)	
+	{escribir "Ciclo en ";
+	escribir t4;
+	t4 = t4 - 1;
+	}
 } finprog

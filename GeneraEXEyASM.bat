@@ -22,11 +22,14 @@ del y.tab.h
 
 del TPFinal.exe
 
+pause
+
+c:\MinGW\bin\gcc.exe -g Generador_Assembler.c -o GenerarASMDebug.exe
 
 pause
 
-c:\MinGW\bin\gcc.exe Generador_Assembler.c -o GenerarASM.exe
-pause
-GenerarASM.exe
-del GenerarASM.exe
+c:\MinGW\bin\gdb.exe -ex run -ex q GenerarASMDebug.exe
+
+del GenerarASMDebug.exe
+
 pause

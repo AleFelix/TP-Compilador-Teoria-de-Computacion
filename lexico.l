@@ -156,7 +156,7 @@ void subString(char* string, char divisor)
 
 int encola(char* tipo) {
 	char aux[strlen(tipo)];
-	strncpy(aux,tipo,strlen(tipo));
+	strcpy(aux,tipo);
 	
 	
 	char aux2[TAMANIO_COLA];
